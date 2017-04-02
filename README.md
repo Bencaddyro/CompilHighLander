@@ -11,7 +11,7 @@
 - [ ] NNP
 - [ ] Test NNP
 
-- [ ] Verboten
+- [ ] Verboten :de:
 
 
 ###### Partie Génération Code machine
@@ -27,6 +27,6 @@
 - [ ] Génération NNP
 - [ ] Test
 
-- [ ] Verboten
+- [ ] Verboten :de:
 
 
