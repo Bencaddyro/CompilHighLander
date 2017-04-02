@@ -1,12 +1,12 @@
-# CompilHighLander
-## HighLander en force pour le projet Compilation !
+# CompilHighLanders
+## HighLanders en force pour le projet Compilation !
 
 
 ###### Partie Machine Virtuelle :
 
 
 - [x] NNA
-- [ ] Test NNA
+- [x] Test NNA
 
 - [ ] NNP
 - [ ] Test NNP
@@ -18,9 +18,9 @@
 
 
 - [x] Compréhension du code source
-- [ ] Création Class CodeGenerator (Maj our Manu)
-- [ ] Génération NNA sans structure de saut
-- [ ] Test
+- [x] Création Class CodeGenerator (Maj our Manu)
+- [x] Génération NNA sans structure de saut
+- [x] Test
 - [ ] Génération NNA avec structure de saut
 - [ ] Test
 
