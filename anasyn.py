@@ -88,7 +88,7 @@ def  corpsProgPrinc(lexical_analyser):
 		logger.debug("End of instructions")
 		
 	lexical_analyser.acceptKeyword("end")
-	lexical_analyser.acceptFel()	
+	lexical_analyser.acceptFel()
 	logger.debug("End of program")
 	
 def partieDecla(lexical_analyser):
@@ -252,11 +252,8 @@ def instr(lexical_analyser):
 		CodeGenerator.grotablo.append('get()')###################################################    'get()'
 	
 	elif lexical_analyser.isKeyword("put"):
-		print lexical_analyser.lexical_unit_index
 		es(lexical_analyser)
-		print "======================================COUu"
-		print lexical_analyser.lexical_unit_index
-		#CodeGenerator.grotablo.append('put()')###################################################    'put()'
+		CodeGenerator.grotablo.append('put()')###################################################    'put()'
 		
 	elif lexical_analyser.isKeyword("return"):
 		retour(lexical_analyser)
@@ -313,7 +310,7 @@ def exp1(lexical_analyser):
 		exp2(lexical_analyser)
 		CodeGenerator.grotablo.append('et()')###################################################    'et()'
         
-def exp2(lexical_analyser):
+def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | exp3 et pas ex2 < exp3|exp3
 	logger.debug("parsing exp2")
         
 	exp3(lexical_analyser)
@@ -694,3 +691,4 @@ def main():
 
 if __name__ == "__main__":
 	main() 
+
