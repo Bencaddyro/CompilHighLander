@@ -6,6 +6,7 @@
 
 import sys, argparse, re
 import logging
+import pprint
 
 import analex
 
@@ -20,15 +21,54 @@ class AnaSynException(Exception):
 		self.value = value
 	def __str__(self):
                 return repr(self.value)
+	
+	
+class CodeGenerator(object):
+	grotablo=[]
+	identifierTable=[]
+	identifierTableTemp=[]
+
+	@staticmethod
+	def add_identifierTable(bula):
+		CodeGenerator.identifierTable.append(bula)
+		
+	@staticmethod
+	def add_identifierTableTemp(bula):
+		CodeGenerator.identifierTableTemp.append(bula)
+		
+	@staticmethod	
+	def raz_identifierTableTemp():
+		CodeGenerator.identifierTableTemp=[]
+		
+	@staticmethod	
+	def set_type_identifierTableTemp(ty):
+		for i in CodeGenerator.identifierTableTemp:
+			i.append(ty)
+			
+	@staticmethod		
+	def concat():
+		CodeGenerator.identifierTable+=CodeGenerator.identifierTableTemp
+		CodeGenerator.identifierTableTemp=[]
+
+	@staticmethod
+	def	getindex(ident):
+		for i,[x,y] in enumerate(CodeGenerator.identifierTable):
+			if x==ident:
+				return i
+
 
 ########################################################################				 	
 #### Syntactical Diagrams
 ########################################################################				 	
 
 def program(lexical_analyser):
+
+	CodeGenerator.grotablo.append('debutProg()')###################################################    'debutProg()'
 	specifProgPrinc(lexical_analyser)
 	lexical_analyser.acceptKeyword("is")
 	corpsProgPrinc(lexical_analyser)
+	
+	CodeGenerator.grotablo.append('finProg()')###################################################    'finProg()'
 	
 def specifProgPrinc(lexical_analyser):
 	lexical_analyser.acceptKeyword("procedure")
@@ -46,9 +86,9 @@ def  corpsProgPrinc(lexical_analyser):
 		logger.debug("Parsing instructions")
 		suiteInstr(lexical_analyser)
 		logger.debug("End of instructions")
-			
+		
 	lexical_analyser.acceptKeyword("end")
-	lexical_analyser.acceptFel()
+	lexical_analyser.acceptFel()	
 	logger.debug("End of program")
 	
 def partieDecla(lexical_analyser):
@@ -76,12 +116,12 @@ def procedure(lexical_analyser):
 	lexical_analyser.acceptKeyword("procedure")
 	ident = lexical_analyser.acceptIdentifier()
 	logger.debug("Name of procedure : "+ident)
-       
+	
 	partieFormelle(lexical_analyser)
 
 	lexical_analyser.acceptKeyword("is")
 	corpsProc(lexical_analyser)
-       
+	
 
 def fonction(lexical_analyser):
 	lexical_analyser.acceptKeyword("function")
@@ -139,15 +179,27 @@ def mode(lexical_analyser):
 		logger.debug("in parameter")
 
 def nnpType(lexical_analyser):
+
 	if lexical_analyser.isKeyword("integer"):
 		lexical_analyser.acceptKeyword("integer")
 		logger.debug("integer type")
+		
+		#########################################
+		CodeGenerator.set_type_identifierTableTemp('integer')
+		
 	elif lexical_analyser.isKeyword("boolean"):
 		lexical_analyser.acceptKeyword("boolean")
-		logger.debug("boolean type")                
+		logger.debug("boolean type")
+		
+		########################################
+		CodeGenerator.set_type_TableTemp('boolean')
+		
 	else:
 		logger.error("Unknown type found <"+ lexical_analyser.get_value() +">!")
 		raise AnaSynException("Unknown type found <"+ lexical_analyser.get_value() +">!")
+	
+	############################################		
+	CodeGenerator.concat()
 
 def partieDeclaProc(lexical_analyser):
 	listeDeclaVar(lexical_analyser)
@@ -163,10 +215,16 @@ def declaVar(lexical_analyser):
 	logger.debug("now parsing type...")
 	nnpType(lexical_analyser)
 	lexical_analyser.acceptCharacter(";")
+	
+	CodeGenerator.grotablo.append('reserver('+str(len(CodeGenerator.identifierTable))+')')###################################################    'reserver(n)'
 
 def listeIdent(lexical_analyser):
 	ident = lexical_analyser.acceptIdentifier()
 	logger.debug("identifier found: "+str(ident))
+
+	##############################################on ajoute l'identifiant a la table des identifiants
+	CodeGenerator.add_identifierTableTemp([ident])
+	
 
 	if lexical_analyser.isCharacter(","):
 		lexical_analyser.acceptCharacter(",")
@@ -185,19 +243,37 @@ def suiteInstr(lexical_analyser):
 def instr(lexical_analyser):		
 	if lexical_analyser.isKeyword("while"):
 		boucle(lexical_analyser)
+		
 	elif lexical_analyser.isKeyword("if"):
 		altern(lexical_analyser)
-	elif lexical_analyser.isKeyword("get") or lexical_analyser.isKeyword("put"):
+		
+	elif lexical_analyser.isKeyword("get"):
 		es(lexical_analyser)
+		CodeGenerator.grotablo.append('get()')###################################################    'get()'
+	
+	elif lexical_analyser.isKeyword("put"):
+		print lexical_analyser.lexical_unit_index
+		es(lexical_analyser)
+		print "======================================COUu"
+		print lexical_analyser.lexical_unit_index
+		#CodeGenerator.grotablo.append('put()')###################################################    'put()'
+		
 	elif lexical_analyser.isKeyword("return"):
 		retour(lexical_analyser)
 	elif lexical_analyser.isIdentifier():
 		ident = lexical_analyser.acceptIdentifier()
+		
+		
+		
 		if lexical_analyser.isSymbol(":="):				
 			# affectation
+			CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')###################################################    'empiler(ad(ident))'
 			lexical_analyser.acceptSymbol(":=")
                         expression(lexical_analyser)
 			logger.debug("parsed affectation")
+			CodeGenerator.grotablo.append('affectation()')###################################################    'affectation()'
+			
+			
 		elif lexical_analyser.isCharacter("("):
 			lexical_analyser.acceptCharacter("(")
 			if not lexical_analyser.isCharacter(")"):
@@ -206,7 +282,7 @@ def instr(lexical_analyser):
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
 		else:
-			logger.error("Expecting procedure call or affectation!")
+			logger.error("Expecting procedure call or affectation, verboten !")
 			raise AnaSynException("Expecting procedure call or affectation!")
 		
 	else:
@@ -226,6 +302,7 @@ def expression(lexical_analyser):
 	if lexical_analyser.isKeyword("or"):
 		lexical_analyser.acceptKeyword("or")
 		exp1(lexical_analyser)
+		CodeGenerator.grotablo.append('ou()')###################################################    'ou()'
         
 def exp1(lexical_analyser):
 	logger.debug("parsing exp1")
@@ -234,21 +311,37 @@ def exp1(lexical_analyser):
 	if lexical_analyser.isKeyword("and"):
 		lexical_analyser.acceptKeyword("and")
 		exp2(lexical_analyser)
+		CodeGenerator.grotablo.append('et()')###################################################    'et()'
         
 def exp2(lexical_analyser):
 	logger.debug("parsing exp2")
         
 	exp3(lexical_analyser)
-	if	lexical_analyser.isSymbol("<") or \
-		lexical_analyser.isSymbol("<=") or \
-		lexical_analyser.isSymbol(">") or \
-		lexical_analyser.isSymbol(">="):
+	if	lexical_analyser.isSymbol("<"):
 		opRel(lexical_analyser)
 		exp3(lexical_analyser)
-	elif lexical_analyser.isSymbol("=") or \
-		lexical_analyser.isSymbol("/="): 
+		CodeGenerator.grotablo.append('inf()')###################################################    'inf()'
+	elif lexical_analyser.isSymbol("<="):
 		opRel(lexical_analyser)
 		exp3(lexical_analyser)
+		CodeGenerator.grotablo.append('infeg()')###################################################    'infeg()'
+	elif lexical_analyser.isSymbol(">"):
+		opRel(lexical_analyser)
+		exp3(lexical_analyser)
+		CodeGenerator.grotablo.append('sup()')###################################################    'sup()'
+	elif lexical_analyser.isSymbol(">="):
+		opRel(lexical_analyser)
+		exp3(lexical_analyser)
+		CodeGenerator.grotablo.append('supeg()')###################################################    'supeg()'
+		
+	elif lexical_analyser.isSymbol("="):
+		opRel(lexical_analyser)
+		exp3(lexical_analyser)
+		CodeGenerator.grotablo.append('egal()')###################################################    'egal()'
+	elif lexical_analyser.isSymbol("/="): 
+		opRel(lexical_analyser)
+		exp3(lexical_analyser)
+		CodeGenerator.grotablo.append('diff()')###################################################    'diff()'
 	
 def opRel(lexical_analyser):
 	logger.debug("parsing relationnal operator: " + lexical_analyser.get_value())
@@ -279,10 +372,16 @@ def opRel(lexical_analyser):
 def exp3(lexical_analyser):
 	logger.debug("parsing exp3")
 	exp4(lexical_analyser)	
-	if lexical_analyser.isCharacter("+") or lexical_analyser.isCharacter("-"):
+	if lexical_analyser.isCharacter("+"):
 		opAdd(lexical_analyser)
-		exp4(lexical_analyser)
-
+		exp3(lexical_analyser)###########################################################################originelement exp4 mais pas de sens ! cf grammaire
+		CodeGenerator.grotablo.append('add()')###################################################    'add()'
+		
+	elif lexical_analyser.isCharacter("-"):
+		opAdd(lexical_analyser)
+		exp3(lexical_analyser)###########################################################################originelement exp4 mais pas de sens ! cf grammaire
+		CodeGenerator.grotablo.append('sous()')###################################################    'sous()'
+		
 def opAdd(lexical_analyser):
 	logger.debug("parsing additive operator: " + lexical_analyser.get_value())
 	if lexical_analyser.isCharacter("+"):
@@ -300,10 +399,16 @@ def exp4(lexical_analyser):
 	logger.debug("parsing exp4")
         
 	prim(lexical_analyser)	
-	if lexical_analyser.isCharacter("*") or lexical_analyser.isCharacter("/"):
+	if lexical_analyser.isCharacter("*"):
 		opMult(lexical_analyser)
-		prim(lexical_analyser)
-
+		exp4(lexical_analyser)###########################################################################originelement prim mais pas de sens ! cf grammaire
+		CodeGenerator.grotablo.append('mult()')###################################################    'mult()'
+		
+	elif lexical_analyser.isCharacter("/"):
+		opMult(lexical_analyser)
+		exp4(lexical_analyser)###########################################################################originelement prim mais pas de sens ! cf grammaire
+		CodeGenerator.grotablo.append('div()')###################################################    'div()'
+		
 def opMult(lexical_analyser):
 	logger.debug("parsing multiplicative operator: " + lexical_analyser.get_value())
 	if lexical_analyser.isCharacter("*"):
@@ -320,9 +425,19 @@ def opMult(lexical_analyser):
 def prim(lexical_analyser):
 	logger.debug("parsing prim")
         
-	if lexical_analyser.isCharacter("+") or lexical_analyser.isCharacter("-") or lexical_analyser.isKeyword("not"):
+	if lexical_analyser.isCharacter("+"):
 		opUnaire(lexical_analyser)
-	elemPrim(lexical_analyser)
+		elemPrim(lexical_analyser)
+	elif lexical_analyser.isCharacter("-"):
+		opUnaire(lexical_analyser)
+		elemPrim(lexical_analyser)
+		CodeGenerator.grotablo.append('moins()')###################################################    'moins()'
+	elif lexical_analyser.isKeyword("not"):
+		opUnaire(lexical_analyser)
+		elemPrim(lexical_analyser)
+		CodeGenerator.grotablo.append('non()')###################################################    'non()'
+	else:
+		elemPrim(lexical_analyser)
 
 def opUnaire(lexical_analyser):
 	logger.debug("parsing unary operator: " + lexical_analyser.get_value())
@@ -360,8 +475,10 @@ def elemPrim(lexical_analyser):
 
 			logger.debug("Call to function: " + ident)
 		else:
-			logger.debug("Use of an identifier as an expression: " + ident)
-                        # ...
+			logger.debug("Use of an identifier as an expression: " + ident)     
+			CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')###################################################    'empiler(ad(ident))'
+			CodeGenerator.grotablo.append('valeurPile()')###################################################    'valeurPile()'
+			
 	else:
 		logger.error("Unknown Value!")
 		raise AnaSynException("Unknown Value!")
@@ -370,8 +487,18 @@ def valeur(lexical_analyser):
 	if lexical_analyser.isInteger():
 		entier = lexical_analyser.acceptInteger()
 		logger.debug("integer value: " + str(entier))
+		
+		CodeGenerator.grotablo.append('empiler('+str(entier)+')')###################################################    'empiler(entier)'
                 return "integer"
-	elif lexical_analyser.isKeyword("true") or lexical_analyser.isKeyword("false"):
+	elif lexical_analyser.isKeyword("true"):
+		
+		CodeGenerator.grotablo.append('empiler(true)')###################################################    'empiler(true)'
+		vtype = valBool(lexical_analyser)
+                return vtype
+	
+	elif lexical_analyser.isKeyword("false"):
+		
+		CodeGenerator.grotablo.append('empiler(false)')###################################################    'empiler(false)'
 		vtype = valBool(lexical_analyser)
                 return vtype
 	else:
@@ -409,31 +536,62 @@ def es(lexical_analyser):
 
 def boucle(lexical_analyser):
 	logger.debug("parsing while loop: ")
+	
+	
 	lexical_analyser.acceptKeyword("while")
 
-	expression(lexical_analyser)
+	###ecrire ad1
+
+	expression(lexical_analyser) #### {C}
+
+	CodeGenerator.grotablo.append('tze('+bula+')')###################################################    'tze(ad2)' /!\attention
 
 	lexical_analyser.acceptKeyword("loop")
-	suiteInstr(lexical_analyser)
+	suiteInstr(lexical_analyser) ### {A}
 
+
+	CodeGenerator.grotablo.append('tra('+bula+')')###################################################    'tra(ad1)'
+	
+	###ecrire ad2
+	
 	lexical_analyser.acceptKeyword("end")
 	logger.debug("end of while loop ")
+
+
+
+
 
 def altern(lexical_analyser):
 	logger.debug("parsing if: ")
 	lexical_analyser.acceptKeyword("if")
 
-	expression(lexical_analyser)
-       
+	expression(lexical_analyser) ### {C}
+	
+	CodeGenerator.grotablo.append('tze('+bula+')')###################################################    'tze(ad1)'
+	
+	
 	lexical_analyser.acceptKeyword("then")
-	suiteInstr(lexical_analyser)
+	suiteInstr(lexical_analyser) ## {A}
+	
 
 	if lexical_analyser.isKeyword("else"):
+		
+		CodeGenerator.grotablo.append('tra('+bula+')')###################################################    'tra(ad2)'
+	
+		## ecrire ad1
 		lexical_analyser.acceptKeyword("else")
-		suiteInstr(lexical_analyser)
-       
-	lexical_analyser.acceptKeyword("end")
+		suiteInstr(lexical_analyser) ###{B}
+		
+		##ecrire ad2
+	
+	else:#ya pas de else (trop lol)
+		
+		#ecrire ad1
+		
+		
+		lexical_analyser.acceptKeyword("end")
 	logger.debug("end of if")
+	
 
 def retour(lexical_analyser):
 	logger.debug("parsing return instruction")
@@ -444,18 +602,19 @@ def retour(lexical_analyser):
 
 ########################################################################				 	
 def main():
+
  	
 	parser = argparse.ArgumentParser(description='Do the syntactical analysis of a NNP program.')
 	parser.add_argument('inputfile', type=str, nargs=1, help='name of the input source file')
 	parser.add_argument('-o', '--outputfile', dest='outputfile', action='store', \
-                default="", help='name of the output file (default: stdout)')
+				    default="", help='name of the output file (default: stdout)')
 	parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0')
 	parser.add_argument('-d', '--debug', action='store_const', const=logging.DEBUG, \
-                default=logging.INFO, help='show debugging info on output')
+				    default=logging.INFO, help='show debugging info on output')
         parser.add_argument('-p', '--pseudo-code', action='store_const', const=True, default=False, \
-                help='enables output of pseudo-code instead of assembly code')
+				    help='enables output of pseudo-code instead of assembly code')
         parser.add_argument('--show-ident-table', action='store_true', \
-                help='shows the final identifiers table')
+				    help='shows the final identifiers table')
 	args = parser.parse_args()
 
 	filename = args.inputfile[0]
@@ -465,7 +624,7 @@ def main():
 	except:
 		print "Error: can\'t open input file!"
 		return
-		
+	
 	outputFilename = args.outputfile
 	
   	# create logger      
@@ -477,10 +636,17 @@ def main():
 	ch.setFormatter(formatter)
 	logger.addHandler(ch)
 
+
+	# Init
+	identifierTable=[]
+	identifierTableTemp=[]
+	tabInstruction=[]
+
+
         if args.pseudo_code:
-                True#
+                True#?
         else:
-                True#
+                True#?
 
 	lexical_analyser = analex.LexicalAnalyser()
 	
@@ -495,13 +661,17 @@ def main():
 	# launch the analysis of the program
 	lexical_analyser.init_analyser()
 	program(lexical_analyser)
-		
+	
+	
+
         if args.show_ident_table:
                 print "------ IDENTIFIER TABLE ------"
-                #print str(identifierTable)
+                print str(CodeGenerator.identifierTable)
                 print "------ END OF IDENTIFIER TABLE ------"
 
-
+	#pprint.pprint(args)
+	
+	
         if outputFilename != "":
                 try:
                         output_file = open(outputFilename, 'w')
@@ -512,15 +682,15 @@ def main():
                 output_file = sys.stdout
 	
         # Outputs the generated code to a file
-        #instrIndex = 0
-        #while instrIndex < codeGenerator.get_instruction_counter():
-        #        output_file.write("%s\n" % str(codeGenerator.get_instruction_at_index(instrIndex)))
-        #        instrIndex += 1
-			
+        instrIndex = 0
+        while instrIndex < len(CodeGenerator.grotablo):
+        	output_file.write("%s\n" % str(CodeGenerator.grotablo[instrIndex]))
+		instrIndex += 1
+		
         if outputFilename != "":
                 output_file.close() 
 
 ########################################################################				 
 
 if __name__ == "__main__":
-    main() 
+	main() 

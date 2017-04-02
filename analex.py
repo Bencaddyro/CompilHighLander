@@ -17,11 +17,11 @@ LEXICAL_UNIT_FEL				= "fel"
 
 keywords = [ \
 	"and", "begin", "else", "end", \
-	"error", "false", "function", "get", \
-	"if", "in", "is", "loop", "not", "or", "out", \
-	"procedure", "put", "return", "then", "true", "while", \
-	"integer", "boolean" \
-	]
+		"error", "false", "function", "get", \
+		"if", "in", "is", "loop", "not", "or", "out", \
+		"procedure", "put", "return", "then", "true", "while", \
+		"integer", "boolean" \
+		]
 
 
 class AnaLexException(Exception):
@@ -29,7 +29,7 @@ class AnaLexException(Exception):
 		self.value = value
 	def __str__(self):
 		return repr(self.value)
-		
+	
 ########################################################################				 	
 #### LexicalUnit classes					    ####				 	
 ########################################################################
@@ -55,10 +55,10 @@ class LexicalUnit(object):
 	
 	def get_col_index(self):
 		return self.col_index
-		
+	
 	def get_length(self):
 		return self.length
-		
+	
 	def get_value(self):
 		return self.value
 	
@@ -76,7 +76,7 @@ class LexicalUnit(object):
 	
 	def is_identifier(self):
 		return False
-		
+	
 	def is_fel(self):
 		return False
 	
@@ -87,17 +87,17 @@ class LexicalUnit(object):
 	@staticmethod
 	def extract_from_line(line):
 		fields = line.split('\t')
-		if field[0] == Identifier.__class__.__name__:
+		if fields[0] == Identifier.__class__.__name__:
 			return Identifier(fields[1], fields[2], fields[3], fields[4])
-		elif field[0] == Keyword.__class__.__name__:
+		elif fields[0] == Keyword.__class__.__name__:
 			return Keyword(fields[1], fields[2], fields[3], fields[4])
-		elif field[0] == Character.__class__.__name__:
+		elif fields[0] == Character.__class__.__name__:
 			return Character(fields[1], fields[2], fields[3], fields[4])
-		elif field[0] == Symbol.__class__.__name__:
+		elif fields[0] == Symbol.__class__.__name__:
 			return Symbol(fields[1], fields[2], fields[3], fields[4])
-		elif field[0] == Fel.__class__.__name__:
+		elif fields[0] == Fel.__class__.__name__:
 			return Fel(fields[1], fields[2], fields[3], fields[4])
-		elif field[0] == Integer.__class__.__name__:
+		elif fields[0] == Integer.__class__.__name__:
 			return Integer(fields[1], fields[2], fields[3], fields[4])
 	
         ## Returns the object as a formatted string
@@ -176,7 +176,7 @@ class Fel(LexicalUnit):
         ## Return true since it is a Fel instance
 	def is_fel(self):
 		return True
-		
+	
 ## Lexical analyser class
 #
 class LexicalAnalyser(object):	
@@ -193,7 +193,7 @@ class LexicalAnalyser(object):
         ## Analyse a line and extract the lexical units. 
         # The extracted lexical units are then added to the attribute lexical_units.
         # @param lineIndex index of the line in the original text
-        # @param line the lien of text to analyse
+        # @param line the line of text to analyse
 	def analyse_line(self, lineIndex, line):
 		space = re.compile("\s")
 		digit = re.compile("[0-9]")
@@ -321,7 +321,7 @@ class LexicalAnalyser(object):
 			input_file = sys.stdint
 		
 		lines = input_file.read_lines()
-			
+		
 		if filename != "":
 			input_file.close()
 		
@@ -333,17 +333,19 @@ class LexicalAnalyser(object):
         # return True if lexical_unit_index < len(lexical_units)
 	def verify_index(self):
 		return self.lexical_unit_index < len(self.lexical_units)
-		
+	
         ## Accepts a given keyword if it corresponds to the current lexical unit.
         # @param keyword string containing the keyword
         # @exception AnaLexException When the keyword is not found
 	def acceptKeyword(self, keyword):
 		if not self.verify_index():
 			raise AnaLexException("Found end of entry while keyword "+keyword+" expected!")
+			
+		print self.lexical_units[self.lexical_unit_index]
 		if self.lexical_units[self.lexical_unit_index].is_keyword(keyword):
 			self.lexical_unit_index += 1
-                else:
-                        raise AnaLexException("Expecting keyword "+keyword+" <line "+str(self.lexical_units[self.lexical_unit_index].get_line_index())+", column "+str(self.lexical_units[self.lexical_unit_index].get_col_index())+"> !")
+		else:
+			raise AnaLexException("Expecting keyword "+keyword+" <line "+str(self.lexical_units[self.lexical_unit_index].get_line_index())+", column "+str(self.lexical_units[self.lexical_unit_index].get_col_index())+"> !")
 
         ## Accepts an identifier if it corresponds to the current lexical unit.
         # @return identifier string value
@@ -424,9 +426,9 @@ class LexicalAnalyser(object):
 			return True
 		return False
 
-	## Tests if a given character corresponds to the current lexical unit.
-        # @return True if the character is found
-        # @exception AnaLexException When the end of entry is found
+		## Tests if a given character corresponds to the current lexical unit.
+		# @return True if the character is found
+		# @exception AnaLexException When the end of entry is found
 	def isCharacter(self, c):
 		if not self.verify_index():
 			raise AnaLexException("Found end of entry while expecting character " + c + "!")
@@ -458,7 +460,7 @@ class LexicalAnalyser(object):
         # @return value of the current unit
 	def get_value(self):
 		return self.lexical_units[self.lexical_unit_index].get_value()
-			
+	
         ## Initializes the lexical analyser
 	def init_analyser(self):
 		self.lexical_unit_index = 0
@@ -470,7 +472,7 @@ class LexicalAnalyser(object):
 def string_is_keyword(s):
 	return keywords.count(s) != 0
 
-		 
+
 ########################################################################				 	
 def main():
 	parser = argparse.ArgumentParser(description='Do the lexical analysis of a NNP program.')
@@ -487,7 +489,7 @@ def main():
 	except:
 		print "Error: can\'t open input file!"
 		return
-		
+	
 	outputFilename = args.outputfile
 	
 	lexical_analyser = LexicalAnalyser()
@@ -504,7 +506,7 @@ def main():
 ########################################################################				 
 
 if __name__ == "__main__":
-    main() 
+	main() 
 
 
 
