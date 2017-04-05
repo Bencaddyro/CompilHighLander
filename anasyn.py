@@ -55,13 +55,14 @@ class CodeGenerator(object):
 		CodeGenerator.identifierTableTemp=[]
 
 	@staticmethod
-	def	getindex(ident):
+	def getindex(ident):
 		for i,[x,y] in enumerate(CodeGenerator.identifierTable):
 			if x==ident:
 				return i
-				
+		assert False,"verboten identifiant \""+ident+"\" non declare at ligne 50 !"
+			
 	@staticmethod
-	def	gettype(ident):
+	def gettype(ident):
 		for [x,y] in CodeGenerator.identifierTable:
 			if x==ident:
 				return y
@@ -303,11 +304,17 @@ def instr(lexical_analyser):
 	elif lexical_analyser.isKeyword("get"):
 		es(lexical_analyser)
 		##transformer l'identifiant en son adresse
+
+		CodeGenerator.verifopUn('integer')
+
 		CodeGenerator.grotablo.append('get()')###################################################    'get()'
 		CodeGenerator.compteurligne+=1
 	
 	elif lexical_analyser.isKeyword("put"):
 		es(lexical_analyser)
+
+		CodeGenerator.verifopUn('integer')
+
 		CodeGenerator.grotablo.append('put()')###################################################    'put()'
 		CodeGenerator.compteurligne+=1
 		
@@ -676,6 +683,9 @@ def es(lexical_analyser):
 		lexical_analyser.acceptCharacter("(")
 		ident = lexical_analyser.acceptIdentifier()
 		CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')#####################################empiler ad(ident)
+		
+		CodeGenerator.pileType.append(CodeGenerator.gettype(ident))
+		
 		CodeGenerator.compteurligne+=1
 		lexical_analyser.acceptCharacter(")")
 		logger.debug("Call to get "+ident)
@@ -839,6 +849,10 @@ def main():
                 print str(CodeGenerator.identifierTable)
                 print "------ END OF IDENTIFIER TABLE ------"
 
+		print "------ TableType ------"
+		print str(CodeGenerator.pileType)
+		print "------           ------"
+
 	#pprint.pprint(args)
 	
 	
@@ -850,6 +864,8 @@ def main():
                         return
         else:
                 output_file = sys.stdout
+
+	
 	
         # Outputs the generated code to a file
         instrIndex = 0
