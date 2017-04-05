@@ -52,7 +52,6 @@ class CodeGenerator(object):
 	@staticmethod		
 	def concat():
 		CodeGenerator.identifierTable+=CodeGenerator.identifierTableTemp
-		CodeGenerator.identifierTableTemp=[]
 
 	@staticmethod
 	def getindex(ident):
@@ -269,8 +268,11 @@ def declaVar(lexical_analyser):
 	nnpType(lexical_analyser)
 	lexical_analyser.acceptCharacter(";")
 	
-	CodeGenerator.grotablo.append('reserver('+str(len(CodeGenerator.identifierTable))+')')###################################################    'reserver(n)'
+	CodeGenerator.grotablo.append('reserver('+str(len(CodeGenerator.identifierTableTemp))+')')###################################################    'reserver(n)'
 	CodeGenerator.compteurligne+=1
+	
+	CodeGenerator.raz_identifierTableTemp()
+	
 
 def listeIdent(lexical_analyser):
 	ident = lexical_analyser.acceptIdentifier()
@@ -327,6 +329,7 @@ def instr(lexical_analyser):
 		
 		if lexical_analyser.isSymbol(":="):
 		
+			print "empile "+CodeGenerator.gettype(ident)+" a cause "+ident
 			CodeGenerator.pileType.append(CodeGenerator.gettype(ident))
 			
 			# affectation
@@ -372,6 +375,7 @@ def expression(lexical_analyser):
 		expression(lexical_analyser)
 
 		CodeGenerator.verifopBin('boolean')
+		print "empile boolean apres \"or\""
 		CodeGenerator.pileType.append('boolean')
 		
 		CodeGenerator.grotablo.append('ou()')###################################################    'ou()'
@@ -386,6 +390,7 @@ def exp1(lexical_analyser):
 		exp1(lexical_analyser)
 
 		CodeGenerator.verifopBin('boolean')
+		print "empile boolean apres \"and\""
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('et()')###################################################    'et()'
@@ -400,6 +405,7 @@ def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | ex
 		exp2(lexical_analyser)
 
 		CodeGenerator.verifopBin('integer')
+		print "empile boolean apres \"<\""
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('inf()')###################################################    'inf()'
@@ -410,6 +416,7 @@ def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | ex
 		exp2(lexical_analyser)
 
 		CodeGenerator.verifopBin('integer')
+		print "empile boolean apres \"<=\""
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('infeg()')###################################################    'infeg()'
@@ -420,6 +427,7 @@ def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | ex
 		exp2(lexical_analyser)
 
 		CodeGenerator.verifopBin('integer')
+		print "empile boolean apres \">\""
 		CodeGenerator.pileType.append('boolean')
 		
 		CodeGenerator.grotablo.append('sup()')###################################################    'sup()'
@@ -430,6 +438,7 @@ def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | ex
 		exp2(lexical_analyser)
 
 		CodeGenerator.verifopBin('integer')
+		print "empile boolean apres \">=\""
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('supeg()')###################################################    'supeg()'
@@ -440,6 +449,7 @@ def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | ex
 		exp2(lexical_analyser)
 
 		CodeGenerator.verifegalType()
+		print "empile boolean apres \"=\""
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('egal()')###################################################    'egal()'
@@ -450,6 +460,7 @@ def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | ex
 		exp2(lexical_analyser)
 
 		CodeGenerator.verifegalType()
+		print "empile boolean apres \"/=\""
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('diff()')###################################################    'diff()'
@@ -489,6 +500,7 @@ def exp3(lexical_analyser):
 		exp3(lexical_analyser)###########################################################################originelement exp4 mais pas de sens ! cf grammaire
 
 		CodeGenerator.verifopBin('integer')
+		print "empile integer apres \"+\""
 		CodeGenerator.pileType.append('integer')
 
 		CodeGenerator.grotablo.append('add()')###################################################    'add()'
@@ -499,6 +511,7 @@ def exp3(lexical_analyser):
 		exp3(lexical_analyser)###########################################################################originelement exp4 mais pas de sens ! cf grammaire
 
 		CodeGenerator.verifopBin('integer')
+		print "empile integer apres \"-\""
 		CodeGenerator.pileType.append('integer')
 
 		CodeGenerator.grotablo.append('sous()')###################################################    'sous()'
@@ -526,6 +539,7 @@ def exp4(lexical_analyser):
 		exp4(lexical_analyser)###########################################################################originelement prim mais pas de sens ! cf grammaire
 
 		CodeGenerator.verifopBin('integer')
+		print "empile integer apres \"*\""
 		CodeGenerator.pileType.append('integer')
 
 		CodeGenerator.grotablo.append('mult()')###################################################    'mult()'
@@ -536,6 +550,7 @@ def exp4(lexical_analyser):
 		exp4(lexical_analyser)###########################################################################originelement prim mais pas de sens ! cf grammaire
 
 		CodeGenerator.verifopBin('integer')
+		print "empile integer apres \"/\""
 		CodeGenerator.pileType.append('integer')
 
 		CodeGenerator.grotablo.append('div()')###################################################    'div()'
@@ -561,14 +576,16 @@ def prim(lexical_analyser):
 		opUnaire(lexical_analyser)
 		elemPrim(lexical_analyser)
 
-		verifopUn('integer')
+		CodeGenerator.verifopUn('integer')
+		print "empile integer apres \"+\" unaire"
 		CodeGenerator.pileType.append('integer')
 
 	elif lexical_analyser.isCharacter("-"):
 		opUnaire(lexical_analyser)
 		elemPrim(lexical_analyser)
 
-		verifopUn('integer')
+		CodeGenerator.verifopUn('integer')
+		print "empile integer apres \"-\" unaire"
 		CodeGenerator.pileType.append('integer')
 
 		CodeGenerator.grotablo.append('moins()')###################################################    'moins()'
@@ -578,7 +595,8 @@ def prim(lexical_analyser):
 		opUnaire(lexical_analyser)
 		elemPrim(lexical_analyser)
 
-		verifopUn('boolean')
+		CodeGenerator.verifopUn('boolean')
+		print "empile boolean apres \"non\" unaire"
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('non()')###################################################    'non()'
@@ -613,6 +631,9 @@ def elemPrim(lexical_analyser):
 		valeur(lexical_analyser)
 	elif lexical_analyser.isIdentifier():
 		ident = lexical_analyser.acceptIdentifier()
+
+
+
 		if lexical_analyser.isCharacter("("):			# Appel fonct
 			lexical_analyser.acceptCharacter("(")
 			if not lexical_analyser.isCharacter(")"):
@@ -624,6 +645,9 @@ def elemPrim(lexical_analyser):
 			logger.debug("Call to function: " + ident)
 		else:
 			logger.debug("Use of an identifier as an expression: " + ident)     
+
+			CodeGenerator.pileType.append(CodeGenerator.gettype(ident))
+
 			CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')###################################################    'empiler(ad(ident))'
 			CodeGenerator.compteurligne+=1
 			CodeGenerator.grotablo.append('valeurPile()')###################################################    'valeurPile()'
@@ -638,6 +662,7 @@ def valeur(lexical_analyser):
 		entier = lexical_analyser.acceptInteger()
 		logger.debug("integer value: " + str(entier))
 		
+		print "empile integer apres "+str(entier)
 		CodeGenerator.pileType.append('integer')
 
 		CodeGenerator.grotablo.append('empiler('+str(entier)+')')###################################################    'empiler(entier)'
@@ -645,7 +670,8 @@ def valeur(lexical_analyser):
 		
                 return "integer"
 	elif lexical_analyser.isKeyword("true"):
-		
+
+		print "empile boolean apres true"
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('empiler(true)')###################################################    'empiler(true)'
@@ -655,6 +681,7 @@ def valeur(lexical_analyser):
 	
 	elif lexical_analyser.isKeyword("false"):
 		
+		print "empile boolean apres fasle"
 		CodeGenerator.pileType.append('boolean')
 
 		CodeGenerator.grotablo.append('empiler(false)')###################################################    'empiler(false)'
@@ -684,6 +711,7 @@ def es(lexical_analyser):
 		ident = lexical_analyser.acceptIdentifier()
 		CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')#####################################empiler ad(ident)
 		
+		print "empile "+CodeGenerator.gettype(ident)+" apres "+ident
 		CodeGenerator.pileType.append(CodeGenerator.gettype(ident))
 		
 		CodeGenerator.compteurligne+=1
@@ -709,6 +737,7 @@ def boucle(lexical_analyser):
 	CodeGenerator.piletra.append(CodeGenerator.compteurligne)
 
 	expression(lexical_analyser) #### {C}
+
 	CodeGenerator.verifopUn("boolean")
 
 	CodeGenerator.grotablo.append('tze(vide)')###################################################    'tze(ad2)' /!\attention
