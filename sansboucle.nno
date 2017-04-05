@@ -1,0 +1,13 @@
+//----------------------------------------------------
+// Programme correct ?
+//------------------------------------------------------
+procedure pp is
+  i,j,c:integer;
+  b:boolean;
+begin
+  b:=true;
+  if true then
+  	i:=1
+  end;
+  i:=56
+end.
