@@ -27,13 +27,13 @@ def test():
 
 
 def executer(file):
-	##i=0
+	i=0
 	pile=Pile()
 	lines=openTab(file)
 	while pile.CO<len(lines):
 		execline(lines[pile.CO],pile,pile.CO)
 		pile.affiche()
-		##i+=1
+		i+=1
 		##pile.affiche()
 		##i=temp
 
@@ -187,7 +187,7 @@ def execline(instr,pile,i):
 		for i in range(len(nb)):
 			if nb[i]==',':
 				temp=i
-		pile.traStat(int(nb[0:temp]),0)
+		pile.traStat(int(nb[0:temp]),int(nb[temp+1::]))
 		
 		##pile.traStat(int(nb))
 		##return (int(nb)-1)
@@ -201,7 +201,7 @@ class Pile:
 	stack = None
 	IP = None
 	base= None
-	baseSuiv= None
+	##baseSuiv= None
 	CO =None
 	def __init__(self):
 		self.stack = []
@@ -212,7 +212,7 @@ class Pile:
 		
 	def affiche(self):
 		print(self.stack)
-		##print self.base
+		print self.base
 
 	##_____Unité de compilation_________________________________________________________________
 	def debutProg(self):
@@ -238,9 +238,8 @@ class Pile:
 		self.CO+=1
 	
 	def empilerAd(self,i):
-		self.empiler(i)
-		self.valeurPile()
-		self.CO-=1
+		self.empiler(self.base+i+2)
+		###self.CO=1
 		##IP=IP+1
 		##stack[IP]=stack[stack[i]]
 				
@@ -260,6 +259,8 @@ class Pile:
 	def get(self):
 		arg=input("entrez l'argument   :  ")
 		self.empiler(arg)
+		self.affectation()
+		self.CO-=1
 
   
 	def put(self):
@@ -367,7 +368,7 @@ class Pile:
 
 	##_____Contrôle__________________________________________________________________________________	
 	def tra(self,i):
-		self.CO=i-1
+		self.CO=i
 		
 	def tze(self):
 		op=self.stack.pop()
@@ -379,7 +380,7 @@ class Pile:
 	def reserverBloc(self):
 		self.empiler(self.base)
 		self.CO-=1
-		self.baseSuiv=self.IP
+		##self.base=self.IP
 		self.empiler(0)
 		self.CO-=1
 		self.CO+=1
@@ -405,7 +406,7 @@ class Pile:
 			self.IP-=1
 		nouvCO=self.stack.pop()
 		self.IP-=1
-		self.CO=nouvCO-1
+		self.CO=nouvCO+2
 		self.base=self.stack.pop()
 		self.IP-=1
 	
@@ -413,13 +414,16 @@ class Pile:
 	def empilerParam(self,i):
 		##if self.base==-1:
 		self.empiler(self.base+i+2)
+		self.valeurPile()
+		self.CO-=1
 		##else :			
 			##self.empiler(self.stack[self.base]+i+2)
 			
 			
 	def traStat(self,ad,nbParam):
-		self.base=self.baseSuiv
-		self.stack[self.base+1]=self.CO+1
+		##self.base=self.baseSuiv
+		self.stack[self.IP-nbParam]=self.CO+1
+		self.base=self.IP-nbParam-1
 		self.tra(ad)
 		
 		
