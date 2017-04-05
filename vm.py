@@ -1,3 +1,5 @@
+# coding: utf-8
+
 def openTab(file):
     f=open(file,'r')
     lines=f.readlines()
@@ -25,13 +27,13 @@ def test():
 
 
 def executer(file):
-	i=0
+	##i=0
 	pile=Pile()
 	lines=openTab(file)
 	while pile.CO<len(lines):
 		execline(lines[pile.CO],pile,pile.CO)
 		pile.affiche()
-		i+=1
+		##i+=1
 		##pile.affiche()
 		##i=temp
 
@@ -40,6 +42,7 @@ def executer(file):
 
 def execline(instr,pile,i):
 	print instr
+
 	if len(instr)>=11 and instr[0:9]=='debutProg':
 		pile.debutProg()
 		
@@ -55,7 +58,12 @@ def execline(instr,pile,i):
 	elif len(instr)>=10 and instr[0:7]=='empiler' and instr[7]!= 'A' and instr[7]!= 'P':
 		nb=instr.rstrip(')')
 		nb=nb.lstrip('empiler(')
-		pile.empiler(int(nb))
+		if nb=='true':
+			pile.empiler(True)
+		elif nb=='false':
+			pile.empiler(False)
+		else:
+			pile.empiler(int(nb))
 		##return i+1
 	
 	elif len(instr)>=12 and instr[0:9]=='empilerAd':
@@ -173,9 +181,15 @@ def execline(instr,pile,i):
 		##return (int(nb)-1)
 		
 	elif len(instr)>=10 and instr[0:7]=='traStat':
+		temp=None
 		nb=instr.rstrip(')')
 		nb=nb.lstrip('traStat(')
-		pile.traStat(int(nb))
+		for i in range(len(nb)):
+			if nb[i]==',':
+				temp=i
+		pile.traStat(int(nb[0:temp]),0)
+		
+		##pile.traStat(int(nb))
 		##return (int(nb)-1)
 
 		
@@ -189,7 +203,6 @@ class Pile:
 	base= None
 	baseSuiv= None
 	CO =None
-	
 	def __init__(self):
 		self.stack = []
 		self.IP=-1
@@ -199,8 +212,9 @@ class Pile:
 		
 	def affiche(self):
 		print(self.stack)
-		print self.base
+		##print self.base
 
+	##_____Unité de compilation_________________________________________________________________
 	def debutProg(self):
 		self.stack=[]
 		self.IP=-1
@@ -211,6 +225,7 @@ class Pile:
 		self.CO+=1	
 		pass
 
+	##_____Variables et affectation_______________________________________________________________
 	def reserver(self,n):
 		for k in range(n):
 			self.stack.append(0)
@@ -237,13 +252,11 @@ class Pile:
 		self.IP=self.IP-2
 		self.CO+=1
 		
-				
-				
 	def valeurPile(self):
 		self.stack[self.IP]=self.stack[self.stack[self.IP]]
 		self.CO+=1
 
-
+	##_____Entrées-Sorties________________________________________________________________________
 	def get(self):
 		arg=input("entrez l'argument   :  ")
 		self.empiler(arg)
@@ -255,6 +268,7 @@ class Pile:
 		self.IP-=1
 		self.CO+=1
 		
+	##_____Expressions arithmétiques_______________________________________________________________	
 	def moins(self):
 		var = self.stack.pop()
 		self.empiler(-(var))
@@ -287,7 +301,7 @@ class Pile:
 		self.IP-=2
 		self.empiler(op2/op1)
    	
-	
+	##_____Expression relationnelles et booléennes_______________________________________________________
 	def egal(self):
 		op1=self.stack.pop()
 		op2=self.stack.pop()
@@ -351,7 +365,7 @@ class Pile:
 		self.IP-=1
 		self.empiler( not op1)
 
-		
+	##_____Contrôle__________________________________________________________________________________	
 	def tra(self,i):
 		self.CO=i-1
 		
@@ -361,6 +375,7 @@ class Pile:
 		self.CO+=1
 		return(op)
 	
+	##_____Procédures et fonctions___________________________________________________________________
 	def reserverBloc(self):
 		self.empiler(self.base)
 		self.CO-=1
@@ -402,7 +417,7 @@ class Pile:
 			##self.empiler(self.stack[self.base]+i+2)
 			
 			
-	def traStat(self,ad):
+	def traStat(self,ad,nbParam):
 		self.base=self.baseSuiv
 		self.stack[self.base+1]=self.CO+1
 		self.tra(ad)
