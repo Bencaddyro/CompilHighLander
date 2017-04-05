@@ -27,6 +27,9 @@ class CodeGenerator(object):
 	grotablo=[]
 	identifierTable=[]
 	identifierTableTemp=[]
+	piletra=[]
+	piletze=[]
+	compteurligne=0
 
 	@staticmethod
 	def add_identifierTable(bula):
@@ -55,6 +58,23 @@ class CodeGenerator(object):
 		for i,[x,y] in enumerate(CodeGenerator.identifierTable):
 			if x==ident:
 				return i
+				
+	@staticmethod
+	def ecriretra():
+		i=CodeGenerator.piletra.pop()
+		CodeGenerator.grotablo.append('tra('+str(i)+')')
+		CodeGenerator.compteurligne+=1
+		
+	@staticmethod
+	def reecriretra():
+		i=CodeGenerator.piletra.pop()
+		CodeGenerator.grotablo[i]='tra('+str(CodeGenerator.compteurligne)+')'
+		
+	@staticmethod
+	def reecriretze():
+		i=CodeGenerator.piletze.pop()
+		CodeGenerator.grotablo[i]='tze('+str(CodeGenerator.compteurligne)+')'
+		
 
 
 ########################################################################				 	
@@ -64,11 +84,13 @@ class CodeGenerator(object):
 def program(lexical_analyser):
 
 	CodeGenerator.grotablo.append('debutProg()')###################################################    'debutProg()'
+	CodeGenerator.compteurligne+=1
 	specifProgPrinc(lexical_analyser)
 	lexical_analyser.acceptKeyword("is")
 	corpsProgPrinc(lexical_analyser)
 	
 	CodeGenerator.grotablo.append('finProg()')###################################################    'finProg()'
+	CodeGenerator.compteurligne+=1
 	
 def specifProgPrinc(lexical_analyser):
 	lexical_analyser.acceptKeyword("procedure")
@@ -192,7 +214,7 @@ def nnpType(lexical_analyser):
 		logger.debug("boolean type")
 		
 		########################################
-		CodeGenerator.set_type_TableTemp('boolean')
+		CodeGenerator.set_type_identifierTableTemp('boolean')
 		
 	else:
 		logger.error("Unknown type found <"+ lexical_analyser.get_value() +">!")
@@ -217,6 +239,7 @@ def declaVar(lexical_analyser):
 	lexical_analyser.acceptCharacter(";")
 	
 	CodeGenerator.grotablo.append('reserver('+str(len(CodeGenerator.identifierTable))+')')###################################################    'reserver(n)'
+	CodeGenerator.compteurligne+=1
 
 def listeIdent(lexical_analyser):
 	ident = lexical_analyser.acceptIdentifier()
@@ -250,10 +273,12 @@ def instr(lexical_analyser):
 	elif lexical_analyser.isKeyword("get"):
 		es(lexical_analyser)
 		CodeGenerator.grotablo.append('get()')###################################################    'get()'
+		CodeGenerator.compteurligne+=1
 	
 	elif lexical_analyser.isKeyword("put"):
 		es(lexical_analyser)
 		CodeGenerator.grotablo.append('put()')###################################################    'put()'
+		CodeGenerator.compteurligne+=1
 		
 	elif lexical_analyser.isKeyword("return"):
 		retour(lexical_analyser)
@@ -265,10 +290,12 @@ def instr(lexical_analyser):
 		if lexical_analyser.isSymbol(":="):				
 			# affectation
 			CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')###################################################    'empiler(ad(ident))'
+			CodeGenerator.compteurligne+=1
 			lexical_analyser.acceptSymbol(":=")
                         expression(lexical_analyser)
 			logger.debug("parsed affectation")
 			CodeGenerator.grotablo.append('affectation()')###################################################    'affectation()'
+			CodeGenerator.compteurligne+=1
 			
 			
 		elif lexical_analyser.isCharacter("("):
@@ -300,6 +327,7 @@ def expression(lexical_analyser):
 		lexical_analyser.acceptKeyword("or")
 		exp1(lexical_analyser)
 		CodeGenerator.grotablo.append('ou()')###################################################    'ou()'
+		CodeGenerator.compteurligne+=1
         
 def exp1(lexical_analyser):
 	logger.debug("parsing exp1")
@@ -309,36 +337,47 @@ def exp1(lexical_analyser):
 		lexical_analyser.acceptKeyword("and")
 		exp2(lexical_analyser)
 		CodeGenerator.grotablo.append('et()')###################################################    'et()'
+		CodeGenerator.compteurligne+=1
         
-def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | exp3 et pas ex2 < exp3|exp3
+def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | exp3 et pas ex2 < exp3|exp3 -> faux prog modif en copnsequence
 	logger.debug("parsing exp2")
         
 	exp3(lexical_analyser)
 	if	lexical_analyser.isSymbol("<"):
 		opRel(lexical_analyser)
-		exp3(lexical_analyser)
+		exp2(lexical_analyser)
 		CodeGenerator.grotablo.append('inf()')###################################################    'inf()'
+		CodeGenerator.compteurligne+=1
+		
 	elif lexical_analyser.isSymbol("<="):
 		opRel(lexical_analyser)
-		exp3(lexical_analyser)
+		exp2(lexical_analyser)
 		CodeGenerator.grotablo.append('infeg()')###################################################    'infeg()'
+		CodeGenerator.compteurligne+=1
+		
 	elif lexical_analyser.isSymbol(">"):
 		opRel(lexical_analyser)
-		exp3(lexical_analyser)
+		exp2(lexical_analyser)
 		CodeGenerator.grotablo.append('sup()')###################################################    'sup()'
+		CodeGenerator.compteurligne+=1
+		
 	elif lexical_analyser.isSymbol(">="):
 		opRel(lexical_analyser)
-		exp3(lexical_analyser)
+		exp2(lexical_analyser)
 		CodeGenerator.grotablo.append('supeg()')###################################################    'supeg()'
+		CodeGenerator.compteurligne+=1
 		
 	elif lexical_analyser.isSymbol("="):
 		opRel(lexical_analyser)
-		exp3(lexical_analyser)
+		exp2(lexical_analyser)
 		CodeGenerator.grotablo.append('egal()')###################################################    'egal()'
+		CodeGenerator.compteurligne+=1
+		
 	elif lexical_analyser.isSymbol("/="): 
 		opRel(lexical_analyser)
-		exp3(lexical_analyser)
+		exp2(lexical_analyser)
 		CodeGenerator.grotablo.append('diff()')###################################################    'diff()'
+		CodeGenerator.compteurligne+=1
 	
 def opRel(lexical_analyser):
 	logger.debug("parsing relationnal operator: " + lexical_analyser.get_value())
@@ -373,11 +412,13 @@ def exp3(lexical_analyser):
 		opAdd(lexical_analyser)
 		exp3(lexical_analyser)###########################################################################originelement exp4 mais pas de sens ! cf grammaire
 		CodeGenerator.grotablo.append('add()')###################################################    'add()'
+		CodeGenerator.compteurligne+=1
 		
 	elif lexical_analyser.isCharacter("-"):
 		opAdd(lexical_analyser)
 		exp3(lexical_analyser)###########################################################################originelement exp4 mais pas de sens ! cf grammaire
 		CodeGenerator.grotablo.append('sous()')###################################################    'sous()'
+		CodeGenerator.compteurligne+=1
 		
 def opAdd(lexical_analyser):
 	logger.debug("parsing additive operator: " + lexical_analyser.get_value())
@@ -400,11 +441,13 @@ def exp4(lexical_analyser):
 		opMult(lexical_analyser)
 		exp4(lexical_analyser)###########################################################################originelement prim mais pas de sens ! cf grammaire
 		CodeGenerator.grotablo.append('mult()')###################################################    'mult()'
+		CodeGenerator.compteurligne+=1
 		
 	elif lexical_analyser.isCharacter("/"):
 		opMult(lexical_analyser)
 		exp4(lexical_analyser)###########################################################################originelement prim mais pas de sens ! cf grammaire
 		CodeGenerator.grotablo.append('div()')###################################################    'div()'
+		CodeGenerator.compteurligne+=1
 		
 def opMult(lexical_analyser):
 	logger.debug("parsing multiplicative operator: " + lexical_analyser.get_value())
@@ -429,10 +472,14 @@ def prim(lexical_analyser):
 		opUnaire(lexical_analyser)
 		elemPrim(lexical_analyser)
 		CodeGenerator.grotablo.append('moins()')###################################################    'moins()'
+		CodeGenerator.compteurligne+=1
+		
 	elif lexical_analyser.isKeyword("not"):
 		opUnaire(lexical_analyser)
 		elemPrim(lexical_analyser)
 		CodeGenerator.grotablo.append('non()')###################################################    'non()'
+		CodeGenerator.compteurligne+=1
+		
 	else:
 		elemPrim(lexical_analyser)
 
@@ -474,7 +521,9 @@ def elemPrim(lexical_analyser):
 		else:
 			logger.debug("Use of an identifier as an expression: " + ident)     
 			CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')###################################################    'empiler(ad(ident))'
+			CodeGenerator.compteurligne+=1
 			CodeGenerator.grotablo.append('valeurPile()')###################################################    'valeurPile()'
+			CodeGenerator.compteurligne+=1
 			
 	else:
 		logger.error("Unknown Value!")
@@ -486,16 +535,20 @@ def valeur(lexical_analyser):
 		logger.debug("integer value: " + str(entier))
 		
 		CodeGenerator.grotablo.append('empiler('+str(entier)+')')###################################################    'empiler(entier)'
+		CodeGenerator.compteurligne+=1
+		
                 return "integer"
 	elif lexical_analyser.isKeyword("true"):
 		
 		CodeGenerator.grotablo.append('empiler(true)')###################################################    'empiler(true)'
+		CodeGenerator.compteurligne+=1
 		vtype = valBool(lexical_analyser)
                 return vtype
 	
 	elif lexical_analyser.isKeyword("false"):
 		
 		CodeGenerator.grotablo.append('empiler(false)')###################################################    'empiler(false)'
+		CodeGenerator.compteurligne+=1
 		vtype = valBool(lexical_analyser)
                 return vtype
 	else:
@@ -538,18 +591,23 @@ def boucle(lexical_analyser):
 	lexical_analyser.acceptKeyword("while")
 
 	###ecrire ad1
+	CodeGenerator.piletra.append(CodeGenerator.compteurligne)
 
 	expression(lexical_analyser) #### {C}
 
-	CodeGenerator.grotablo.append('tze('+bula+')')###################################################    'tze(ad2)' /!\attention
+	CodeGenerator.grotablo.append('tze(vide)')###################################################    'tze(ad2)' /!\attention
+	CodeGenerator.piletze.append(CodeGenerator.compteurligne)
+	CodeGenerator.compteurligne+=1
 
 	lexical_analyser.acceptKeyword("loop")
 	suiteInstr(lexical_analyser) ### {A}
 
 
-	CodeGenerator.grotablo.append('tra('+bula+')')###################################################    'tra(ad1)'
+	CodeGenerator.ecriretra()###################################################    'tra(ad1)'
 	
-	###ecrire ad2
+
+	##reecriture de tze avec ad2
+	CodeGenerator.reecriretze()
 	
 	lexical_analyser.acceptKeyword("end")
 	logger.debug("end of while loop ")
@@ -564,8 +622,9 @@ def altern(lexical_analyser):
 
 	expression(lexical_analyser) ### {C}
 	
-	CodeGenerator.grotablo.append('tze('+bula+')')###################################################    'tze(ad1)'
-	
+	CodeGenerator.grotablo.append('tze(vide)')###################################################    'tze(ad1)'
+	CodeGenerator.piletze.append(CodeGenerator.compteurligne)
+	CodeGenerator.compteurligne+=1	
 	
 	lexical_analyser.acceptKeyword("then")
 	suiteInstr(lexical_analyser) ## {A}
@@ -573,20 +632,26 @@ def altern(lexical_analyser):
 
 	if lexical_analyser.isKeyword("else"):
 		
-		CodeGenerator.grotablo.append('tra('+bula+')')###################################################    'tra(ad2)'
+		CodeGenerator.grotablo.append('tra(vide)')###################################################    'tra(ad2)'
+		CodeGenerator.piletra.append(CodeGenerator.compteurligne)
+		CodeGenerator.compteurligne+=1
 	
-		## ecrire ad1
+		##reecriture de tze avec ad1
+		CodeGenerator.reecriretze()
+		
 		lexical_analyser.acceptKeyword("else")
 		suiteInstr(lexical_analyser) ###{B}
 		
 		##ecrire ad2
+		CodeGenerator.reecriretra()
 	
 	else:#ya pas de else (trop lol)
 		
-		#ecrire ad1
+		##reecriture de tze avec ad1
+		CodeGenerator.reecriretze()
 		
 		
-		lexical_analyser.acceptKeyword("end")
+	lexical_analyser.acceptKeyword("end")
 	logger.debug("end of if")
 	
 

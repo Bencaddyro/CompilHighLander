@@ -340,8 +340,6 @@ class LexicalAnalyser(object):
 	def acceptKeyword(self, keyword):
 		if not self.verify_index():
 			raise AnaLexException("Found end of entry while keyword "+keyword+" expected!")
-			
-		print self.lexical_units[self.lexical_unit_index]
 		if self.lexical_units[self.lexical_unit_index].is_keyword(keyword):
 			self.lexical_unit_index += 1
 		else:
@@ -427,7 +425,7 @@ class LexicalAnalyser(object):
 		return False
 
 		## Tests if a given character corresponds to the current lexical unit.
-		# @return True if the character is found
+   		# @return True if the character is found
 		# @exception AnaLexException When the end of entry is found
 	def isCharacter(self, c):
 		if not self.verify_index():
