@@ -21,12 +21,12 @@
 - [x] Création Class CodeGenerator (Maj our Manu)
 - [x] Génération NNA sans structure de saut
 - [x] Test
-- [ ] Génération NNA avec structure de saut
+- [x] Génération NNA avec structure de saut
 - [ ] Test
 
 - [ ] Génération NNP
 - [ ] Test
 
-- [ ] Verboten :de:
+- [x] Verboten :de:
 
 
