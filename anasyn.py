@@ -30,6 +30,7 @@ class CodeGenerator(object):
 	piletra=[]
 	piletze=[]
 	compteurligne=0
+	pileType=[]
 
 	@staticmethod
 	def add_identifierTable(bula):
@@ -74,6 +75,14 @@ class CodeGenerator(object):
 	def reecriretze():
 		i=CodeGenerator.piletze.pop()
 		CodeGenerator.grotablo[i]='tze('+str(CodeGenerator.compteurligne)+')'
+		
+	@staticmethod
+	def verifegal():
+		a=CodeGenerator.pileType.pop()
+		b=CodeGenerator.pileType.pop()
+		if(a!=b):
+			a=0
+			
 		
 
 
@@ -272,6 +281,7 @@ def instr(lexical_analyser):
 		
 	elif lexical_analyser.isKeyword("get"):
 		es(lexical_analyser)
+		##transformer l'identifiant en son adresse
 		CodeGenerator.grotablo.append('get()')###################################################    'get()'
 		CodeGenerator.compteurligne+=1
 	
@@ -572,6 +582,7 @@ def es(lexical_analyser):
 		lexical_analyser.acceptKeyword("get")
 		lexical_analyser.acceptCharacter("(")
 		ident = lexical_analyser.acceptIdentifier()
+		CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')#####################################empiler ad(ident)
 		lexical_analyser.acceptCharacter(")")
 		logger.debug("Call to get "+ident)
 	elif lexical_analyser.isKeyword("put"):
