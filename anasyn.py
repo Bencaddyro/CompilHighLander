@@ -81,7 +81,7 @@ class CodeGenerator(object):
 		a=CodeGenerator.pileType.pop()
 		b=CodeGenerator.pileType.pop()
 		if(a!=b):
-			a=0
+			assert "verboten type "+b+" found but type "+a+" expected ! at "+str(CodeGenerator.compteurligne)
 			
 		
 
@@ -583,6 +583,7 @@ def es(lexical_analyser):
 		lexical_analyser.acceptCharacter("(")
 		ident = lexical_analyser.acceptIdentifier()
 		CodeGenerator.grotablo.append('empiler('+str(CodeGenerator.getindex(ident))+')')#####################################empiler ad(ident)
+		CodeGenerator.compteurligne+=1
 		lexical_analyser.acceptCharacter(")")
 		logger.debug("Call to get "+ident)
 	elif lexical_analyser.isKeyword("put"):
