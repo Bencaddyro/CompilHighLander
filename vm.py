@@ -201,7 +201,7 @@ class Pile:
 	stack = None
 	IP = None
 	base= None
-	##baseSuiv= None
+	baseAct= None
 	CO =None
 	def __init__(self):
 		self.stack = []
@@ -212,7 +212,9 @@ class Pile:
 		
 	def affiche(self):
 		print(self.stack)
-		print self.base
+		##print "base ="+str(self.base)
+		##print "IP="+str(self.IP)
+		##print len(self.stack)
 
 	##_____Unité de compilation_________________________________________________________________
 	def debutProg(self):
@@ -238,7 +240,7 @@ class Pile:
 		self.CO+=1
 	
 	def empilerAd(self,i):
-		self.empiler(self.base+i+2)
+		self.empiler(self.baseAct+i+2)
 		###self.CO=1
 		##IP=IP+1
 		##stack[IP]=stack[stack[i]]
@@ -379,6 +381,7 @@ class Pile:
 	##_____Procédures et fonctions___________________________________________________________________
 	def reserverBloc(self):
 		self.empiler(self.base)
+		self.base=self.IP
 		self.CO-=1
 		##self.base=self.IP
 		self.empiler(0)
@@ -396,6 +399,7 @@ class Pile:
 		self.IP-=1
 		self.CO=nouvCO-1
 		self.base=self.stack.pop()
+		self.baseAct=self.base
 		self.IP-=1
 		self.empiler(res)
 			
@@ -408,12 +412,13 @@ class Pile:
 		self.IP-=1
 		self.CO=nouvCO+2
 		self.base=self.stack.pop()
+		self.baseAct=self.base
 		self.IP-=1
 	
 	
 	def empilerParam(self,i):
 		##if self.base==-1:
-		self.empiler(self.base+i+2)
+		self.empiler(self.baseAct+i+2)
 		self.valeurPile()
 		self.CO-=1
 		##else :			
@@ -421,7 +426,7 @@ class Pile:
 			
 			
 	def traStat(self,ad,nbParam):
-		##self.base=self.baseSuiv
+		self.baseAct=self.base
 		self.stack[self.IP-nbParam]=self.CO+1
 		self.base=self.IP-nbParam-1
 		self.tra(ad)
