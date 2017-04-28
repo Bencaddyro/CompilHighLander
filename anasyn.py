@@ -22,102 +22,101 @@ class AnaSynException(Exception):
 	def __str__(self):
                 return repr(self.value)
 
-
-
-
 class ArrayCodeGenerator(object):
-
-	scope=0 #index le scope
-
-	grotablo=[] #code nilnovimachine
-	compteurligne=0
-
-	piletra=[]
-	piletze=[]
-
-	pileType=[]
-
-	petitablo=[]#tab des CodeGenerator
-
-
+	petitablo=[]
+	indicecourant=-1
+	courant=None
+	
+	
 	@staticmethod
-	def ecriretra():
-		i=ArrayCodeGenerator.piletra.pop()
-		ArrayCodeGenerator.grotablo.append('tra('+str(i)+')')
-		ArrayCodeGenerator.compteurligne+=1
-		
-	@staticmethod
-	def reecriretra():
-		i=ArrayCodeGenerator.piletra.pop()
-		ArrayCodeGenerator.grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
-		
-	@staticmethod
-	def reecriretze():
-		i=ArrayCodeGenerator.piletze.pop()
-		ArrayCodeGenerator.grotablo[i]='tze('+str(ArrayCodeGenerator.compteurligne)+')'
-
-
-	@staticmethod
-	def ecrire(lolu):
-		ArrayCodeGenerator.grotablo.append(lolu)
-		ArrayCodeGenerator.compteurligne+=1
+	def ajoutNNA():
+		ArrayCodeGenerator.petitablo.append(CodeGenerator())
+		ArrayCodeGenerator.indicecourant+=1
+		ArrayCodeGenerator.courant=ArrayCodeGenerator.petitablo[ArrayCodeGenerator.indicecourant]
 
 
 class CodeGenerator(object):
-
-	signature=[]
-	adressephi=0
-	identifieur=""
-	scope=0	
-
+	grotablo=[]
+	identifierTable=[]
+	identifierTableTemp=[]
+	piletra=[]
+	piletze=[]
+	compteurligne=0
+	pileType=[]
 	
-	def __init__(self,signature,add,ident,scope):
-		self.signature = signature
-		self.addressephi =add
-		self.identifieur = ident
-		self.scope = scope
 
 
-
-
-
-
-	###On oubli pour l'instant les verif semantique
+	@classmethod
+	def add_identifierTable(self,bula):
+		self.identifierTable.append(bula)
+		
+	@classmethod
+	def add_identifierTableTemp(self,bula):
+		self.identifierTableTemp.append(bula)
+		
+	@classmethod
+	def raz_identifierTableTemp(self):
+		self.identifierTableTemp=[]
+		
+	@classmethod
+	def set_type_identifierTableTemp(self,ty):
+		for i in self.identifierTableTemp:
+			i.append(ty)
 			
-	@staticmethod
-	def gettype(ident):
-		for [x,y] in CodeGenerator.identifierTable:
+	@classmethod	
+	def concat(self):
+		self.identifierTable+=self.identifierTableTemp
+
+	@classmethod
+	def getindex(self,ident):
+		for i,[x,y] in enumerate(self.identifierTable):
+			if x==ident:
+				return i
+		assert False,"verboten identifiant \""+ident+"\" non declare at ligne 50 !"
+		
+	@classmethod
+	def gettype(self,ident):
+		for [x,y] in self.identifierTable:
 			if x==ident:
 				return y
-				
-	@staticmethod
-	def verifegalType():
-		print "verifeagltype"+str(CodeGenerator.pileType)
-		b=CodeGenerator.pileType.pop()
-		a=CodeGenerator.pileType.pop()
+			
+	@classmethod
+	def ecriretra(self):
+		i=self.piletra.pop()
+		self.grotablo.append('tra('+str(i)+')')
+		self.compteurligne+=1
+		
+	@classmethod
+	def reecriretra(self):
+		i=self.piletra.pop()
+		self.grotablo[i]='tra('+str(self.compteurligne)+')'
+		
+	@classmethod
+	def reecriretze(self):
+		i=self.piletze.pop()
+		self.grotablo[i]='tze('+str(self.compteurligne)+')'
+		
+	@classmethod
+	def verifegalType(self):
+		print "verifeagltype"+str(self.pileType)
+		b=self.pileType.pop()
+		a=self.pileType.pop()
 		if(a!=b):
-			msg = "verboten type "+b+" found but type "+a+" expected ! at ligne 3"
-			logger.error(msg)
-			raise AnaSynException(msg)
+			assert False,"verboten type "+b+" found but type "+a+" expected ! at ligne 3"
 	
-	@staticmethod
-	def verifopBin(var):
-		print "verifopBin"+str(CodeGenerator.pileType)
-		b=CodeGenerator.pileType.pop()
-		a=CodeGenerator.pileType.pop()
+	@classmethod
+	def verifopBin(self,var):
+		print "verifopBin"+str(self.pileType)
+		b=self.pileType.pop()
+		a=self.pileType.pop()
 		if(a!= var or b!=var):
-			msg = "verboten type "+var+" expected ! at ligne 3"
-			logger.error(msg)
-			raise AnaSynException(msg)
-
-	@staticmethod
-	def verifopUn(var):
-		print "verifopUn"+str(CodeGenerator.pileType)
-		a=CodeGenerator.pileType.pop()
+			assert False,"verboten type "+var+" expected ! at ligne 3"
+	@classmethod
+	def verifopUn(self,var):
+		print "verifopUn"+str(self.pileType)
+		a=self.pileType.pop()
 		if(a!= var):
-			msg = "verboten type "+var+" expected ! at ligne 3"
-			logger.error(msg)
-			raise AnaSynException(msg)
+			assert False,"verboten type "+var+" expected ! at ligne 3"
 	
 		
 
@@ -128,14 +127,14 @@ class CodeGenerator(object):
 
 def program(lexical_analyser):
 
-	ArrayCodeGenerator.ecrire('debutProg()')###################################################    'debutProg()'
-
+	ArrayCodeGenerator.courant.grotablo.append('debutProg()')###################################################    'debutProg()'
+	ArrayCodeGenerator.courant.compteurligne+=1
 	specifProgPrinc(lexical_analyser)
 	lexical_analyser.acceptKeyword("is")
 	corpsProgPrinc(lexical_analyser)
 	
-	ArrayCodeGenerator.ecrire('finProg()')###################################################    'finProg()'
-	
+	ArrayCodeGenerator.courant.grotablo.append('finProg()')###################################################    'finProg()'
+	ArrayCodeGenerator.courant.compteurligne+=1
 	
 def specifProgPrinc(lexical_analyser):
 	lexical_analyser.acceptKeyword("procedure")
@@ -181,11 +180,14 @@ def declaOp(lexical_analyser):
 
 def procedure(lexical_analyser):
 	lexical_analyser.acceptKeyword("procedure")
+	#############################################creation bloc NNA pour procedure !
+	
+	ArrayCodeGenerator.ajoutNNA()
+	
 	ident = lexical_analyser.acceptIdentifier()
-
-	#créer le codegnerator pour la procedure ident##############################
-
 	logger.debug("Name of procedure : "+ident)
+	
+	#############################################ajout ident a la table des identifiants global 
 	
 	partieFormelle(lexical_analyser)
 
@@ -195,13 +197,14 @@ def procedure(lexical_analyser):
 
 def fonction(lexical_analyser):
 	lexical_analyser.acceptKeyword("function")
+	#############################################creation bloc NNA pour fonction !
+	
+	ArrayCodeGenerator.ajoutNNA()
+	
 	ident = lexical_analyser.acceptIdentifier()
-
-	#créer le codegnerator pour la function ident################################"
-
 	logger.debug("Name of function : "+ident)
 	
-        partieFormelle(lexical_analyser)
+	partieFormelle(lexical_analyser)
 
 	lexical_analyser.acceptKeyword("return")
 	nnpType(lexical_analyser)
@@ -257,23 +260,22 @@ def nnpType(lexical_analyser):
 		lexical_analyser.acceptKeyword("integer")
 		logger.debug("integer type")
 		
-		#########################################typer 'integer' les identifieur déja consomé
-		#CodeGenerator.set_type_identifierTableTemp('integer')
+		#########################################
+		ArrayCodeGenerator.courant.set_type_identifierTableTemp('integer')
 		
 	elif lexical_analyser.isKeyword("boolean"):
 		lexical_analyser.acceptKeyword("boolean")
 		logger.debug("boolean type")
 		
-		########################################typer 'boolean' les identifieur déja consomé
-		#CodeGenerator.set_type_identifierTableTemp('boolean')
+		########################################
+		ArrayCodeGenerator.courant.set_type_identifierTableTemp('boolean')
 		
 	else:
 		logger.error("Unknown type found <"+ lexical_analyser.get_value() +">!")
 		raise AnaSynException("Unknown type found <"+ lexical_analyser.get_value() +">!")
 	
-	#
-	#CodeGenerator.set_scope()  typer le scope des truc########################################################################
-	#CodeGenerator.concat()  flush les identifieur reconnu
+	############################################		
+	ArrayCodeGenerator.courant.concat()
 
 def partieDeclaProc(lexical_analyser):
 	listeDeclaVar(lexical_analyser)
@@ -290,17 +292,19 @@ def declaVar(lexical_analyser):
 	nnpType(lexical_analyser)
 	lexical_analyser.acceptCharacter(";")
 	
-	ArrayCodeGenerator.ecrire('reserver('+str(len(CodeGenerator.identifierTableTemp))+')')###################################################    'reserver(n)'
-		
-	#CodeGenerator.raz_identifierTableTemp() magouille qu'on faisait, a faire plus propre !
+	ArrayCodeGenerator.courant.grotablo.append('reserver('+str(len(ArrayCodeGenerator.courant.identifierTableTemp))+')')###################################################    'reserver(n)'
+	ArrayCodeGenerator.courant.compteurligne+=1
+	
+	ArrayCodeGenerator.courant.raz_identifierTableTemp()
 	
 
 def listeIdent(lexical_analyser):
 	ident = lexical_analyser.acceptIdentifier()
 	logger.debug("identifier found: "+str(ident))
 
-	##############################################on ajoute l'identifiant a la table des identifiants a faire plus propre
-	#CodeGenerator.add_identifierTableTemp([ident])
+	##############################################on ajoute l'identifiant a la table des identifiants
+	
+	ArrayCodeGenerator.courant.add_identifierTableTemp([ident])
 	
 
 	if lexical_analyser.isCharacter(","):
@@ -328,57 +332,50 @@ def instr(lexical_analyser):
 		es(lexical_analyser)
 		##transformer l'identifiant en son adresse
 
-		#CodeGenerator.verifopUn('integer') verif semantique
+		ArrayCodeGenerator.courant.verifopUn('integer')
 
-		Array.CodeGenerator.ecrire('get()')###################################################    'get()'
-
+		ArrayCodeGenerator.courant.grotablo.append('get()')###################################################    'get()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 	
 	elif lexical_analyser.isKeyword("put"):
 		es(lexical_analyser)
 
-		#CodeGenerator.verifopUn('integer') verif semantique
+		ArrayCodeGenerator.courant.verifopUn('integer')
 
-		ArrayCodeGenerator.ecrire('put()')###################################################    'put()'
+		ArrayCodeGenerator.courant.grotablo.append('put()')###################################################    'put()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
-		
-	elif lexical_analyser.isKeyword("return"): ####deja fait dans 'expression'
+	elif lexical_analyser.isKeyword("return"):
 		retour(lexical_analyser)
-
 	elif lexical_analyser.isIdentifier():
 		ident = lexical_analyser.acceptIdentifier()
 		
 		
-		if lexical_analyser.isSymbol(":="):
 		
-			#logger.debug("empile "+CodeGenerator.gettype(ident)+" a cause "+ident)
-			#CodeGenerator.pileType.append(CodeGenerator.gettype(ident)) verif semantique
+		if lexical_analyser.isSymbol(":="):
+			
+			print "empile "+ArrayCodeGenerator.courant.gettype(ident)+" a cause "+ident
+			ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
 			
 			# affectation
-			ArrayCodeGenerator.ecrire('empiler('+str(ArrayCodeGenerator.getAdresse(ident))+')')###################################################    'empiler(ad(ident))'
-			
+			ArrayCodeGenerator.courant.grotablo.append('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
+			ArrayCodeGenerator.courant.compteurligne+=1
 			lexical_analyser.acceptSymbol(":=")
                         expression(lexical_analyser)
 			logger.debug("parsed affectation")
 
-			#CodeGenerator.verifegalType() verif semantique
+			ArrayCodeGenerator.courant.verifegalType()
 
-			ArrayCodeGenerator.ecrire('affectation()')###################################################    'affectation()'
-			
+			ArrayCodeGenerator.courant.grotablo.append('affectation()')###################################################    'affectation()'
+			ArrayCodeGenerator.courant.compteurligne+=1
 			
 			
 		elif lexical_analyser.isCharacter("("):
-
-			ArrayCodeGenerator.ecrire('reserverBloc()')###################################################    'reserverBloc()'
-						
-			lexical_analyser.acceptCharacter("(")			
+			lexical_analyser.acceptCharacter("(")
 			if not lexical_analyser.isCharacter(")"):
-				#avec parametres
 				listePe(lexical_analyser)
 
 			lexical_analyser.acceptCharacter(")")
-
-			ArrayCodeGenerator.ecrire('traStat('+str(ArrayCodeGenerator.magicAdresse(ident))+','+ArrayCodeGenerator.nbParam(ident)+')')######### 'traStat(ad(ident),nbparam(ident))'
-
 			logger.debug("parsed procedure call")
 		else:
 			logger.error("Expecting procedure call or affectation, verboten !")
@@ -402,11 +399,12 @@ def expression(lexical_analyser):
 		lexical_analyser.acceptKeyword("or")
 		expression(lexical_analyser)
 
-		#ArrayCodeGenerator.verifopBin('boolean') verif semantique
-		#logger.debug("empile boolean apres \"or\"")
-		#CodeGenerator.pileType.append('boolean') idem
+		ArrayCodeGenerator.courant.verifopBin('boolean')
+		print "empile boolean apres \"or\""
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 		
-		ArrayCodeGenerator.ecrire('ou()')###################################################    'ou()'
+		ArrayCodeGenerator.courant.grotablo.append('ou()')###################################################    'ou()'
+		ArrayCodeGenerator.courant.compteurligne+=1
         
 def exp1(lexical_analyser):
 	logger.debug("parsing exp1")
@@ -416,11 +414,12 @@ def exp1(lexical_analyser):
 		lexical_analyser.acceptKeyword("and")
 		exp1(lexical_analyser)
 
-		#CodeGenerator.verifopBin('boolean')verif semantique
-		#logger.debug("empile boolean apres \"and\"")
-		#CodeGenerator.pileType.append('boolean') idem
+		ArrayCodeGenerator.courant.verifopBin('boolean')
+		print "empile boolean apres \"and\""
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('et()')###################################################    'et()'
+		ArrayCodeGenerator.courant.grotablo.append('et()')###################################################    'et()'
+		ArrayCodeGenerator.courant.compteurligne+=1
         
 def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | exp3 et pas ex2 < exp3|exp3 -> faux prog modif en copnsequence
 	logger.debug("parsing exp2")
@@ -430,65 +429,67 @@ def exp2(lexical_analyser):#### a recheck la grammaire si exp2:=exp3 < exp3 | ex
 		opRel(lexical_analyser)
 		exp2(lexical_analyser)
 
-		#CodeGenerator.verifopBin('integer') verif semantique
-		#logger.debug("empile boolean apres \"<\"")
-		#CodeGenerator.pileType.append('boolean') verif semantique
+		ArrayCodeGenerator.courant.verifopBin('integer')
+		print "empile boolean apres \"<\""
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('inf()')###################################################    'inf()'
+		ArrayCodeGenerator.courant.grotablo.append('inf()')###################################################    'inf()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	elif lexical_analyser.isSymbol("<="):
 		opRel(lexical_analyser)
 		exp2(lexical_analyser)
 
-		#CodeGenerator.verifopBin('integer') verif semantique
-		#logger.debug("empile boolean apres \"<=\"")
-		#CodeGenerator.pileType.append('boolean') verif semantique
+		ArrayCodeGenerator.courant.verifopBin('integer')
+		print "empile boolean apres \"<=\""
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('infeg()')###################################################    'infeg()'
+		ArrayCodeGenerator.courant.grotablo.append('infeg()')###################################################    'infeg()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	elif lexical_analyser.isSymbol(">"):
 		opRel(lexical_analyser)
 		exp2(lexical_analyser)
 
-		#CodeGenerator.verifopBin('integer') verif semantqiue
-		#logger.debug("empile boolean apres \">\"")
-		#CodeGenerator.pileType.append('boolean')
+		ArrayCodeGenerator.courant.verifopBin('integer')
+		print "empile boolean apres \">\""
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 		
-		ArrayCodeGenerator.ecrire('sup()')###################################################    'sup()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('sup()')###################################################    'sup()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	elif lexical_analyser.isSymbol(">="):
 		opRel(lexical_analyser)
 		exp2(lexical_analyser)
 
-		#CodeGenerator.verifopBin('integer') verif semantqiue
-		#logger.debug("empile boolean apres \">=\"")
-		#CodeGenerator.pileType.append('boolean')
+		ArrayCodeGenerator.courant.verifopBin('integer')
+		print "empile boolean apres \">=\""
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('supeg()')###################################################    'supeg()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('supeg()')###################################################    'supeg()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	elif lexical_analyser.isSymbol("="):
 		opRel(lexical_analyser)
 		exp2(lexical_analyser)
 
-		#CodeGenerator.verifegalType()
-		#logger.debug("empile boolean apres \"=\"")
-		#CodeGenerator.pileType.append('boolean')
+		ArrayCodeGenerator.courant.verifegalType()
+		print "empile boolean apres \"=\""
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('egal()')###################################################    'egal()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('egal()')###################################################    'egal()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	elif lexical_analyser.isSymbol("/="): 
 		opRel(lexical_analyser)
 		exp2(lexical_analyser)
 
-		#CodeGenerator.verifegalType()
-		#logger.debug("empile boolean apres \"/=\"")
-		#CodeGenerator.pileType.append('boolean')
+		ArrayCodeGenerator.courant.verifegalType()
+		print "empile boolean apres \"/=\""
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('diff()')###################################################    'diff()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('diff()')###################################################    'diff()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 	
 def opRel(lexical_analyser):
 	logger.debug("parsing relationnal operator: " + lexical_analyser.get_value())
@@ -523,22 +524,23 @@ def exp3(lexical_analyser):
 		opAdd(lexical_analyser)
 		exp3(lexical_analyser)###########################################################################originelement exp4 mais pas de sens ! cf grammaire
 
-		#CodeGenerator.verifopBin('integer')
-		#logger.debug("empile integer apres \"+\"")
-		#CodeGenerator.pileType.append('integer') verif semantique
+		ArrayCodeGenerator.courant.verifopBin('integer')
+		print "empile integer apres \"+\""
+		ArrayCodeGenerator.courant.pileType.append('integer')
 
-		ArrayCodeGenerator.ecrire('add()')###################################################    'add()'
+		ArrayCodeGenerator.courant.grotablo.append('add()')###################################################    'add()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	elif lexical_analyser.isCharacter("-"):
 		opAdd(lexical_analyser)
 		exp3(lexical_analyser)###########################################################################originelement exp4 mais pas de sens ! cf grammaire
 
-		#CodeGenerator.verifopBin('integer')
-		#logger.debug("empile integer apres \"-\"")
-		#CodeGenerator.pileType.append('integer')
+		ArrayCodeGenerator.courant.verifopBin('integer')
+		print "empile integer apres \"-\""
+		ArrayCodeGenerator.courant.pileType.append('integer')
 
-		ArrayCodeGenerator.ecrire('sous()')###################################################    'sous()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('sous()')###################################################    'sous()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 def opAdd(lexical_analyser):
 	logger.debug("parsing additive operator: " + lexical_analyser.get_value())
@@ -561,23 +563,23 @@ def exp4(lexical_analyser):
 		opMult(lexical_analyser)
 		exp4(lexical_analyser)###########################################################################originelement prim mais pas de sens ! cf grammaire
 
-		#CodeGenerator.verifopBin('integer')
-		#logger.debug("empile integer apres \"*\"")
-		#CodeGenerator.pileType.append('integer')
+		ArrayCodeGenerator.courant.verifopBin('integer')
+		print "empile integer apres \"*\""
+		ArrayCodeGenerator.courant.pileType.append('integer')
 
-		ArrayCodeGenerator.ecrire('mult()')###################################################    'mult()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('mult()')###################################################    'mult()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	elif lexical_analyser.isCharacter("/"):
 		opMult(lexical_analyser)
 		exp4(lexical_analyser)###########################################################################originelement prim mais pas de sens ! cf grammaire
 
-		#CodeGenerator.verifopBin('integer')
-		#logger.debug("empile integer apres \"/\"")
-		#CodeGenerator.pileType.append('integer')
+		ArrayCodeGenerator.courant.verifopBin('integer')
+		print "empile integer apres \"/\""
+		ArrayCodeGenerator.courant.pileType.append('integer')
 
-		ArrayCodeGenerator.ecrire('div()')###################################################    'div()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('div()')###################################################    'div()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 def opMult(lexical_analyser):
 	logger.debug("parsing multiplicative operator: " + lexical_analyser.get_value())
@@ -599,31 +601,31 @@ def prim(lexical_analyser):
 		opUnaire(lexical_analyser)
 		elemPrim(lexical_analyser)
 
-		#CodeGenerator.verifopUn('integer')
-		#logger.debug("empile integer apres \"+\" unaire")
-		#CodeGenerator.pileType.append('integer')
+		ArrayCodeGenerator.courant.verifopUn('integer')
+		print "empile integer apres \"+\" unaire"
+		ArrayCodeGenerator.courant.pileType.append('integer')
 
 	elif lexical_analyser.isCharacter("-"):
 		opUnaire(lexical_analyser)
 		elemPrim(lexical_analyser)
 
-		#CodeGenerator.verifopUn('integer')
-		#logger.debug("empile integer apres \"-\" unaire")
-		#CodeGenerator.pileType.append('integer')
+		ArrayCodeGenerator.courant.verifopUn('integer')
+		print "empile integer apres \"-\" unaire"
+		ArrayCodeGenerator.courant.pileType.append('integer')
 
-		ArrayCodeGenerator.ecrire('moins()')###################################################    'moins()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('moins()')###################################################    'moins()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	elif lexical_analyser.isKeyword("not"):
 		opUnaire(lexical_analyser)
 		elemPrim(lexical_analyser)
 
-		#CodeGenerator.verifopUn('boolean')
-		#logger.debug("empile boolean apres \"non\" unaire")
-		#CodeGenerator.pileType.append('boolean')
+		ArrayCodeGenerator.courant.verifopUn('boolean')
+		print "empile boolean apres \"non\" unaire"
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('non()')###################################################    'non()'
-		
+		ArrayCodeGenerator.courant.grotablo.append('non()')###################################################    'non()'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
 	else:
 		elemPrim(lexical_analyser)
@@ -669,11 +671,12 @@ def elemPrim(lexical_analyser):
 		else:
 			logger.debug("Use of an identifier as an expression: " + ident)     
 
-			#CodeGenerator.pileType.append(CodeGenerator.gettype(ident))
+			ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
 
-			ArrayCodeGenerator.ecrire('empiler('+str(CodeGenerator.magicAdresse(ident))+')')###################################################    'empiler(ad(ident))'
-			ArrayCodeGenerator.ecrire('valeurPile()')###################################################    'valeurPile()'
-			
+			ArrayCodeGenerator.courant.grotablo.append('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
+			ArrayCodeGenerator.courant.compteurligne+=1
+			ArrayCodeGenerator.courant.grotablo.append('valeurPile()')###################################################    'valeurPile()'
+			ArrayCodeGenerator.courant.compteurligne+=1
 			
 	else:
 		logger.error("Unknown Value!")
@@ -684,31 +687,30 @@ def valeur(lexical_analyser):
 		entier = lexical_analyser.acceptInteger()
 		logger.debug("integer value: " + str(entier))
 		
-		logger.debug("empile integer apres "+str(entier))
-		#CodeGenerator.pileType.append('integer')
+		print "empile integer apres "+str(entier)
+		ArrayCodeGenerator.courant.pileType.append('integer')
 
-		ArrayCodeGenerator.ecrire('empiler('+str(entier)+')')###################################################    'empiler(entier)'
+		ArrayCodeGenerator.courant.grotablo.append('empiler('+str(entier)+')')###################################################    'empiler(entier)'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		
                 return "integer"
 	elif lexical_analyser.isKeyword("true"):
 
-		logger.debug("empile boolean apres true")
-		#CodeGenerator.pileType.append('boolean')
+		print "empile boolean apres true"
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('empiler(true)')###################################################    'empiler(true)'
-		
-		
+		ArrayCodeGenerator.courant.grotablo.append('empiler(true)')###################################################    'empiler(true)'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		vtype = valBool(lexical_analyser)
                 return vtype
 	
 	elif lexical_analyser.isKeyword("false"):
 		
-		logger.debug("empile boolean apres fasle")
-		#CodeGenerator.pileType.append('boolean')
+		print "empile boolean apres fasle"
+		ArrayCodeGenerator.courant.pileType.append('boolean')
 
-		ArrayCodeGenerator.ecrire('empiler(false)')###################################################    'empiler(false)'
-		
-		
+		ArrayCodeGenerator.courant.grotablo.append('empiler(false)')###################################################    'empiler(false)'
+		ArrayCodeGenerator.courant.compteurligne+=1
 		vtype = valBool(lexical_analyser)
                 return vtype
 	else:
@@ -732,12 +734,12 @@ def es(lexical_analyser):
 		lexical_analyser.acceptKeyword("get")
 		lexical_analyser.acceptCharacter("(")
 		ident = lexical_analyser.acceptIdentifier()
+		ArrayCodeGenerator.courant.grotablo.append('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################empiler ad(ident)
 		
-		ArrayCodeGenerator.ecrire('empiler('+str(CodeGenerator.magicAdresse(ident))+')')#####################################empiler ad(ident)
+		print "empile "+ArrayCodeGenerator.courant.gettype(ident)+" apres "+ident
+		ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
 		
-		logger.debug("empile "+CodeGenerator.gettype(ident)+" apres "+ident)
-		#CodeGenerator.pileType.append(CodeGenerator.gettype(ident)) verif semantqiue
-		
+		ArrayCodeGenerator.courant.compteurligne+=1
 		lexical_analyser.acceptCharacter(")")
 		logger.debug("Call to get "+ident)
 	elif lexical_analyser.isKeyword("put"):
@@ -757,24 +759,25 @@ def boucle(lexical_analyser):
 	lexical_analyser.acceptKeyword("while")
 
 	###ecrire ad1
-	ArrayCodeGenerator.piletra.append(CodeGenerator.compteurligne)
+	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.courant.compteurligne)
 
 	expression(lexical_analyser) #### {C}
 
-	#CodeGenerator.verifopUn("boolean")
+	ArrayCodeGenerator.courant.verifopUn("boolean")
 
-	ArrayCodeGenerator.piletze.append(CodeGenerator.compteurligne)
+	ArrayCodeGenerator.courant.grotablo.append('tze(vide)')###################################################    'tze(ad2)' /!\attention
+	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.courant.compteurligne)
+	ArrayCodeGenerator.courant.compteurligne+=1
 
-	ArrayCodeGenerator.ecrire('tze(vide)')###################################################    'tze(ad2)' /!\attention
-	
 	lexical_analyser.acceptKeyword("loop")
 	suiteInstr(lexical_analyser) ### {A}
 
-	ArrayCodeGenerator.ecriretra()###################################################    'tra(ad1)'
+
+	ArrayCodeGenerator.courant.ecriretra()###################################################    'tra(ad1)'
 	
 
 	##reecriture de tze avec ad2
-	ArrayCodeGenerator.reecriretze()
+	ArrayCodeGenerator.courant.reecriretze()
 	
 	lexical_analyser.acceptKeyword("end")
 	logger.debug("end of while loop ")
@@ -789,36 +792,35 @@ def altern(lexical_analyser):
 
 	expression(lexical_analyser) ### {C}
 
-	#CodeGenerator.verifopUn("boolean")
-
-	ArrayCodeGenerator.piletze.append(CodeGenerator.compteurligne)
+	ArrayCodeGenerator.courant.verifopUn("boolean")
 	
-	ArrayCodeGenerator.ecrire('tze(vide)')###################################################    'tze(ad1)'
-
-		
+	ArrayCodeGenerator.courant.grotablo.append('tze(vide)')###################################################    'tze(ad1)'
+	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.courant.compteurligne)
+	ArrayCodeGenerator.courant.compteurligne+=1	
 	
 	lexical_analyser.acceptKeyword("then")
 	suiteInstr(lexical_analyser) ## {A}
 	
 
 	if lexical_analyser.isKeyword("else"):
-
-		ArrayCodeGenerator.piletra.append(CodeGenerator.compteurligne)
-		ArrayCodeGenerator.grotablo.append('tra(vide)')###################################################    'tra(ad2)'
-			
+		
+		ArrayCodeGenerator.courant.grotablo.append('tra(vide)')###################################################    'tra(ad2)'
+		ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.courant.compteurligne)
+		ArrayCodeGenerator.courant.compteurligne+=1
+	
 		##reecriture de tze avec ad1
-		ArrayCodeGenerator.reecriretze()
+		ArrayCodeGenerator.courant.reecriretze()
 		
 		lexical_analyser.acceptKeyword("else")
 		suiteInstr(lexical_analyser) ###{B}
 		
 		##ecrire ad2
-		ArrayCodeGenerator.reecriretra()
+		ArrayCodeGenerator.courant.reecriretra()
 	
 	else:#ya pas de else (trop lol)
 		
 		##reecriture de tze avec ad1
-		ArrayCodeGenerator.reecriretze()
+		ArrayCodeGenerator.courant.reecriretze()
 		
 		
 	lexical_analyser.acceptKeyword("end")
@@ -829,8 +831,6 @@ def retour(lexical_analyser):
 	logger.debug("parsing return instruction")
 	lexical_analyser.acceptKeyword("return")
 	expression(lexical_analyser)
-
-	ArrayCodeGenerator.ecrire("retourFonct()")###########################     'retourFonct()'
 
 	
 
@@ -894,17 +894,19 @@ def main():
 
 	# launch the analysis of the program
 	lexical_analyser.init_analyser()
+
+	ArrayCodeGenerator.ajoutNNA()
 	program(lexical_analyser)
 	
 	
 
         if args.show_ident_table:
                 print "------ IDENTIFIER TABLE ------"
-                print str(CodeGenerator.identifierTable)
+                print str(ArrayCodeGenerator.courant.identifierTable)
                 print "------ END OF IDENTIFIER TABLE ------"
 
 		print "------ TableType ------"
-		print str(CodeGenerator.pileType)
+		print str(ArrayCodeGenerator.courant.pileType)
 		print "------           ------"
 
 	#pprint.pprint(args)
@@ -923,8 +925,9 @@ def main():
 	
         # Outputs the generated code to a file
         instrIndex = 0
-        while instrIndex < len(CodeGenerator.grotablo):
-        	output_file.write("%s\n" % str(CodeGenerator.grotablo[instrIndex]))
+        while instrIndex < len(ArrayCodeGenerator.courant.grotablo):
+        #parcours de codegeneratorun par un dasn l'ordre croissant puis le 0 ?
+        	#output_file.write("%s\n" % str(ArrayCodeGenerator.courant.grotablo[instrIndex]))
 		instrIndex += 1
 		
         if outputFilename != "":
