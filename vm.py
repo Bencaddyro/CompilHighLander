@@ -1,4 +1,5 @@
 # coding: utf-8
+import argparse
 
 def openTab(file):
     f=open(file,'r')
@@ -26,13 +27,18 @@ def test():
 	maPile.affiche()
 
 
-def executer(file):
-	i=0
+def executer(file,stack,line,sbs):
+	##i=0
 	pile=Pile()
 	lines=openTab(file)
 	while pile.CO<len(lines):
+		if stack or sbs :
+			pile.affiche()
+		if line or sbs:
+			print lines[pile.CO]
 		execline(lines[pile.CO],pile,pile.CO)
-		pile.affiche()
+		if(sbs):
+			raw_input()
 		i+=1
 		##pile.affiche()
 		##i=temp
@@ -41,7 +47,7 @@ def executer(file):
 
 
 def execline(instr,pile,i):
-	print instr
+	##print instr
 
 	if len(instr)>=11 and instr[0:9]=='debutProg':
 		pile.debutProg()
@@ -433,6 +439,36 @@ class Pile:
 		
 		
 		
+		
+def main():
+	parser = argparse.ArgumentParser(description='Execute an NNP object code programm')
+	parser.add_argument('inputfile', type=str, nargs=1, help='name of the code object file')
+	parser.add_argument('-c','--cafe', help='need coffee ?',action="store_true")
+	parser.add_argument('-s','--stack', help='Print the stack trace',action="store_true")
+	parser.add_argument('-l','--line', help='Print the execution trace',action="store_true")
+	parser.add_argument('-sbs','--step_by_step', help='Use step by step running',action="store_true")
+
+	args = parser.parse_args()
+
+	filename = args.inputfile[0]
+	f = None
+	try:
+		f = open(filename, 'r')
+	except:
+		print "Error: can\'t open input file!"
+		return
+	
+	executer(filename,args.stack,args.line,args.step_by_step)
+	
+	if args.cafe :
+		print "I want a coffee !"
+	else:
+		print "I'd like a cup of water ! "
+	
+########################################################################				 
+
+if __name__ == "__main__":
+	main() 
 		
 		
 		
