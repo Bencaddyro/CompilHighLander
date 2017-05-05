@@ -43,12 +43,7 @@ class ArrayCodeGenerator(object):
 	
 	@staticmethod
 	def ajoutNNA():
-		print "creation obj"+str(ArrayCodeGenerator.indicecourant)
-		X=CodeGenerator(ArrayCodeGenerator.indicecourant)
-		ArrayCodeGenerator.petitablo.append(X)
-		print str(X.scope)
-		print str(ArrayCodeGenerator.petitablo[0].scope)
-		print str(ArrayCodeGenerator.petitablo[-1].scope)
+		ArrayCodeGenerator.petitablo.append(CodeGenerator(ArrayCodeGenerator.indicecourant))
 		ArrayCodeGenerator.indicecourant+=1
 		ArrayCodeGenerator.courant=ArrayCodeGenerator.petitablo[ArrayCodeGenerator.indicecourant]
 
@@ -63,7 +58,7 @@ class CodeGenerator:
 	pileType=None
 	scope=None
 	ident=None
-	
+
 	def __init__(self,lolu):
 		self.scope=lolu
 		self.grotablo=[]
@@ -72,9 +67,7 @@ class CodeGenerator:
 		self.piletra=[]
 		self.piletze=[]
 		self.pileType=[]
-		
-	def ecrire_ident(self, nom):
-	       	self.ident = nom;
+
 	
 
 	def ecrire(self,mot):
@@ -109,6 +102,13 @@ class CodeGenerator:
 		for i,[x,y] in enumerate(self.identifierTable):
 			if x==ident:
 				return i
+
+		for i in ArrayCodeGenerator.petitablo:
+			print "------ IDENTIFIER TABLE ------"
+			print str(i.identifierTable)
+			print "------ END OF IDENTIFIER TABLE ------"
+
+
 		assert False,"verboten identifiant \""+ident+"\" non declare at ligne 50 !"
 		
 
@@ -178,15 +178,27 @@ def program(lexical_analyser):
 	
 	
 def specifProgPrinc(lexical_analyser):
+
+	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
+	ArrayCodeGenerator.courant.ecrire('tra(vide)')###################################################    'tra(fin de declaration des blocs NNA)'
+
+
 	lexical_analyser.acceptKeyword("procedure")
 	ident = lexical_analyser.acceptIdentifier()
 	logger.debug("Name of program : "+ident)
 	
-def  corpsProgPrinc(lexical_analyser):
+def  corpsProgPrinc(lexical_analyser):##########################################################################################################################################################
 	if not lexical_analyser.isKeyword("begin"):
 		logger.debug("Parsing declarations")
 		partieDecla(lexical_analyser)
 		logger.debug("End of declarations")
+
+	else:
+		i=ArrayCodeGenerator.petitablo[0].piletra.pop()
+		ArrayCodeGenerator.petitablo[0].grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
+		ArrayCodeGenerator.ajoutNNA()
+		#################attention re-ecrire le tra, si pas de partie declarative
+
 	lexical_analyser.acceptKeyword("begin")
 
 	if not lexical_analyser.isKeyword("end"):
@@ -201,10 +213,19 @@ def  corpsProgPrinc(lexical_analyser):
 def partieDecla(lexical_analyser):
         if lexical_analyser.isKeyword("procedure") or lexical_analyser.isKeyword("function") :
                 listeDeclaOp(lexical_analyser)
-                if not lexical_analyser.isKeyword("begin"):
-                        listeDeclaVar(lexical_analyser)
+		
+		i=ArrayCodeGenerator.petitablo[0].piletra.pop()
+		ArrayCodeGenerator.petitablo[0].grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
+		ArrayCodeGenerator.ajoutNNA()
+		#######################re-ecriture du 1er tra !
+		if not lexical_analyser.isKeyword("begin"):
+			listeDeclaVar(lexical_analyser)
         
         else:
+		i=ArrayCodeGenerator.petitablo[0].piletra.pop()
+		ArrayCodeGenerator.petitablo[0].grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
+		###########################################################################re-ecriture du premier tra !
+		ArrayCodeGenerator.ajoutNNA()
                 listeDeclaVar(lexical_analyser)                
 
 def listeDeclaOp(lexical_analyser):
@@ -256,14 +277,14 @@ def fonction(lexical_analyser):
 	lexical_analyser.acceptKeyword("is")
 	corpsFonct(lexical_analyser)
 
-def corpsProc(lexical_analyser):
+def corpsProc(lexical_analyser):##########################################################################################################################################################
 	if not lexical_analyser.isKeyword("begin"):
 		partieDeclaProc(lexical_analyser)
 	lexical_analyser.acceptKeyword("begin")
 	suiteInstr(lexical_analyser)
 	lexical_analyser.acceptKeyword("end")
 
-def corpsFonct(lexical_analyser):
+def corpsFonct(lexical_analyser):##########################################################################################################################################################
 	if not lexical_analyser.isKeyword("begin"):
 		partieDeclaProc(lexical_analyser)
 	lexical_analyser.acceptKeyword("begin")
@@ -945,9 +966,10 @@ def main():
 	
 
         if args.show_ident_table:
-                print "------ IDENTIFIER TABLE ------"
-                print str(ArrayCodeGenerator.courant.identifierTable)
-                print "------ END OF IDENTIFIER TABLE ------"
+		for i in ArrayCodeGenerator.petitablo:
+			print "------ IDENTIFIER TABLE ------"
+			print str(i.identifierTable)
+			print "------ END OF IDENTIFIER TABLE ------"
 
 		print "------ TableType ------"
 		print str(ArrayCodeGenerator.courant.pileType)
