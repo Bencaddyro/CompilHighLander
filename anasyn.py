@@ -26,7 +26,7 @@ class ArrayCodeGenerator(object):
 	petitablo=[]
 	indicecourant=-1
 	courant=None
-	
+	compteurligne=0
 	
 	@staticmethod
 	def ajoutNNA():
@@ -41,9 +41,8 @@ class CodeGenerator(object):
 	identifierTableTemp=[]
 	piletra=[]
 	piletze=[]
-	compteurligne=0
 	pileType=[]
-	
+	compteurligne=0
 
 
 	@classmethod
@@ -84,17 +83,17 @@ class CodeGenerator(object):
 	def ecriretra(self):
 		i=self.piletra.pop()
 		self.grotablo.append('tra('+str(i)+')')
-		self.compteurligne+=1
+		ArrayCodeGenerator.compteurligne+=1
 		
 	@classmethod
 	def reecriretra(self):
 		i=self.piletra.pop()
-		self.grotablo[i]='tra('+str(self.compteurligne)+')'
+		self.grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
 		
 	@classmethod
 	def reecriretze(self):
 		i=self.piletze.pop()
-		self.grotablo[i]='tze('+str(self.compteurligne)+')'
+		self.grotablo[i]='tze('+str(ArrayCodeGenerator.compteurligne)+')'
 		
 	@classmethod
 	def verifegalType(self):
@@ -924,11 +923,12 @@ def main():
 	
 	
         # Outputs the generated code to a file
-        instrIndex = 0
-        while instrIndex < len(ArrayCodeGenerator.courant.grotablo):
-        #parcours de codegeneratorun par un dasn l'ordre croissant puis le 0 ?
-        	#output_file.write("%s\n" % str(ArrayCodeGenerator.courant.grotablo[instrIndex]))
-		instrIndex += 1
+        for i in ArrayCodeGenerator.petitablo:
+	        instrIndex = 0
+		while instrIndex < len(i.grotablo):
+    	    #parcours de codegeneratorun par un dasn l'ordre croissant puis le 0 ?
+			output_file.write("%s\n" % str(i.grotablo[instrIndex]))
+			instrIndex += 1
 		
         if outputFilename != "":
                 output_file.close() 
