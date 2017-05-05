@@ -27,22 +27,24 @@ class ArrayCodeGenerator(object):
 	indicecourant=-1
 	courant=None
 	compteurligne=0
-	dictionnaire = []
+	dictionnaire=[]
+	
+	
 	
 	@staticmethod
 	def ajoutDictionnaire(self, i, j):
 			self.dicionnaire.append([i,j])
+	
 	
 	@staticmethod
 	def retourDictionnaire(self, i):
 		for k in self.dictionnaire:
 			if k[0]==i:
 				return k[j]
-		
 	
 	
 	@staticmethod
-	def ajoutNNA():
+	def ajoutNNA():	
 		ArrayCodeGenerator.petitablo.append(CodeGenerator(ArrayCodeGenerator.indicecourant))
 		ArrayCodeGenerator.indicecourant+=1
 		ArrayCodeGenerator.courant=ArrayCodeGenerator.petitablo[ArrayCodeGenerator.indicecourant]
@@ -67,7 +69,6 @@ class CodeGenerator:
 		self.piletra=[]
 		self.piletze=[]
 		self.pileType=[]
-
 	
 
 	def ecrire(self,mot):
@@ -98,7 +99,6 @@ class CodeGenerator:
 
 	
 	def getindex(self,ident):
-		
 		for i,[x,y] in enumerate(self.identifierTable):
 			if x==ident:
 				return i
@@ -153,7 +153,6 @@ class CodeGenerator:
 		a=self.pileType.pop()
 		if(a!= var):
 			assert False,"verboten type "+var+" expected ! at ligne 3"
-			
 	
 		
 
@@ -165,10 +164,6 @@ class CodeGenerator:
 def program(lexical_analyser):
 
 	ArrayCodeGenerator.courant.ecrire('debutProg()')###################################################    'debutProg()'
-
-	ArrayCodeGenerator.courant.ecrire('tra(vide)')###################################################    'tra(fin de declaration des blocs NNA)'
-	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
-
 	
 	specifProgPrinc(lexical_analyser)
 	lexical_analyser.acceptKeyword("is")
@@ -247,8 +242,7 @@ def procedure(lexical_analyser):
 	ArrayCodeGenerator.ajoutNNA()
 	
 	ident = lexical_analyser.acceptIdentifier()
-	
-	ajoutDictionnaire(ident,ArrayCodeGenerator.indiceCourant)
+	ajoutDictionnaire(ident,ArrayCodeGenerator.indiceCourant)#################ajout nom ident dans dictionnaire
 	logger.debug("Name of procedure : "+ident)
 	
 	#############################################ajout ident a la table des identifiants global 
@@ -266,7 +260,7 @@ def fonction(lexical_analyser):
 	ArrayCodeGenerator.ajoutNNA()
 	
 	ident = lexical_analyser.acceptIdentifier()
-	ajoutDictionnaire(ident,ArrayCodeGenerator.indiceCourant)
+	ajoutDictionnaire(ident,ArrayCodeGenerator.indiceCourant)##########ajout ident au dico 
 	logger.debug("Name of function : "+ident)
 	
 	partieFormelle(lexical_analyser)
