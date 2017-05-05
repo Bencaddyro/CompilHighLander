@@ -32,12 +32,12 @@ class ArrayCodeGenerator(object):
 	
 	
 	@staticmethod
-	def ajoutDictionnaire(self, i, j):
+	def ajoutDictionnaire(i, j):
 			self.dicionnaire.append([i,j])
 	
 	
 	@staticmethod
-	def retourDictionnaire(self, i):
+	def retourDictionnaire(i):
 		for k in self.dictionnaire:
 			if k[0]==i:
 				return k[j]
@@ -251,7 +251,7 @@ def procedure(lexical_analyser):
 
 	lexical_analyser.acceptKeyword("is")
 	corpsProc(lexical_analyser)
-	
+	ArrayCodeGenerator.courant.ecrire('retourProc()')###################retourFonct()
 
 def fonction(lexical_analyser):
 	lexical_analyser.acceptKeyword("function")
@@ -270,6 +270,8 @@ def fonction(lexical_analyser):
         
 	lexical_analyser.acceptKeyword("is")
 	corpsFonct(lexical_analyser)
+	ArrayCodeGenerator.courant.ecrire('retourFonct()')###################retourFonct()
+
 
 def corpsProc(lexical_analyser):##########################################################################################################################################################
 	if not lexical_analyser.isKeyword("begin"):
@@ -432,10 +434,29 @@ def instr(lexical_analyser):
 		elif lexical_analyser.isCharacter("("):
 			lexical_analyser.acceptCharacter("(")
 			if not lexical_analyser.isCharacter(")"):
+			
+			
+				ArrayCodeGenerator.courant.ecrire('reserverBloc()')#############reserverBloc()
+				
 				listePe(lexical_analyser)
+				
+				ArrayCodeGenerator.courant.ecrire('traStat('+ArrayCodeGenerator.petitablo[retourDictionnaire(ident)].adresseDebut+','+ArrayCodeGenerator.petitablo[retourDictionnaire(ident)].nbParam)############traStat(magicaddesse)
+
+
+			else:
+			
+				ArrayCodeGenerator.courant.ecrire('reserverBloc()')	###################################     Appel fonction ou procedure SANS parametre
++				ArrayCodeGenerator.courant.ecrire('traStat('+ArrayCodeGenerator.petitablo[retourDictionnaire(ident)].adresseDebut+','+0)
+ 
+ 
+
 
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
+			
+			
+			
+			
 		else:
 			logger.error("Expecting procedure call or affectation, verboten !")
 			raise AnaSynException("Expecting procedure call or affectation!")
