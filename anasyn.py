@@ -31,77 +31,95 @@ class ArrayCodeGenerator(object):
 	
 	@staticmethod
 	def ajoutNNA():
-		ArrayCodeGenerator.petitablo.append(CodeGenerator())
+		print "creation obj"+str(ArrayCodeGenerator.indicecourant)
+		X=CodeGenerator(ArrayCodeGenerator.indicecourant)
+
+		Y=CodeGenerator(50)
+		Z=CodeGenerator(100000000)
+		ArrayCodeGenerator.petitablo.append(X)
+
+		print str(X.scope)
+		print str(ArrayCodeGenerator.petitablo[0].scope)
+		print str(ArrayCodeGenerator.petitablo[-1].scope)
 		ArrayCodeGenerator.indicecourant+=1
 		ArrayCodeGenerator.courant=ArrayCodeGenerator.petitablo[ArrayCodeGenerator.indicecourant]
 
 
 
-class CodeGenerator(object):
-	grotablo=[]
-	identifierTable=[]
-	identifierTableTemp=[]
-	piletra=[]
-	piletze=[]
-	pileType=[]
+class CodeGenerator:
+	grotablo=None
+	identifierTable=None
+	identifierTableTemp=None
+	piletra=None
+	piletze=None
+	pileType=None
+	scope=None
 	
-	@classmethod
+	def __init__(self,lolu):
+		self.scope=lolu
+		self.grotablo=[]
+		self.identifierTable=[]
+		self.identifierTableTemp=[]
+		self.piletra=[]
+		self.piletze=[]
+		self.pileType=[]
+	
+
 	def ecrire(self,mot):
 	       	self.grotablo.append(mot)
 		ArrayCodeGenerator.compteurligne+=1
 		
 		
-	@classmethod
+
 	def add_identifierTable(self,bula):
 		self.identifierTable.append(bula)
 		
-	@classmethod
+
 	def add_identifierTableTemp(self,bula):
 		self.identifierTableTemp.append(bula)
 		
-	@classmethod
+	
 	def raz_identifierTableTemp(self):
 		self.identifierTableTemp=[]
 		
-	@classmethod
+
 	def set_type_identifierTableTemp(self,ty):
 		for i in self.identifierTableTemp:
 			i.append(ty)
 			
-	@classmethod	
+	
 	def concat(self):
 		self.identifierTable+=self.identifierTableTemp
 
-	@classmethod
+	
 	def getindex(self,ident):
 		for i,[x,y] in enumerate(self.identifierTable):
 			if x==ident:
 				return i
 		assert False,"verboten identifiant \""+ident+"\" non declare at ligne 50 !"
 		
-	@classmethod
+
 	def gettype(self,ident):
 		for [x,y] in self.identifierTable:
 			if x==ident:
 				return y
 			
-	@classmethod
+
 	def ecriretra(self):
 		i=self.piletra.pop()
-		self.grotablo.append('tra('+str(i)+')')
-		self.compteurligne+=1
+		self.ecrire('tra('+str(i)+')')
 		
-	@classmethod
+	
 	def reecriretra(self):
 		i=self.piletra.pop()
-		self.grotablo[i]='tra('+str(self.compteurligne)+')'
+		self.grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
 		
-	@classmethod
+
 	def reecriretze(self):
 		i=self.piletze.pop()
-		self.grotablo[i]='tze('+str(self.compteurligne)+')'
+		self.grotablo[i]='tze('+str(ArrayCodeGenerator.compteurligne)+')'
 		
-	@classmethod
+
 	def verifegalType(self):
 		print "verifeagltype"+str(self.pileType)
 		b=self.pileType.pop()
@@ -109,14 +127,14 @@ class CodeGenerator(object):
 		if(a!=b):
 			assert False,"verboten type "+b+" found but type "+a+" expected ! at ligne 3"
 	
-	@classmethod
+
 	def verifopBin(self,var):
 		print "verifopBin"+str(self.pileType)
 		b=self.pileType.pop()
 		a=self.pileType.pop()
 		if(a!= var or b!=var):
 			assert False,"verboten type "+var+" expected ! at ligne 3"
-	@classmethod
+
 	def verifopUn(self,var):
 		print "verifopUn"+str(self.pileType)
 		a=self.pileType.pop()
@@ -133,6 +151,10 @@ class CodeGenerator(object):
 def program(lexical_analyser):
 
 	ArrayCodeGenerator.courant.ecrire('debutProg()')###################################################    'debutProg()'
+
+	ArrayCodeGenerator.courant.ecrire('tra(vide)')###################################################    'tra(fin de declaration des blocs NNA)'
+	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
+
 	
 	specifProgPrinc(lexical_analyser)
 	lexical_analyser.acceptKeyword("is")
@@ -764,14 +786,14 @@ def boucle(lexical_analyser):
 	lexical_analyser.acceptKeyword("while")
 
 	###ecrire ad1
-	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.courant.compteurligne)
+	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
 
 	expression(lexical_analyser) #### {C}
 
 	ArrayCodeGenerator.courant.verifopUn("boolean")
 
 	ArrayCodeGenerator.courant.ecrire('tze(vide)')###################################################    'tze(ad2)' /!\attention
-	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.courant.compteurligne)
+	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.compteurligne)
 	
 
 	lexical_analyser.acceptKeyword("loop")
@@ -800,8 +822,8 @@ def altern(lexical_analyser):
 	ArrayCodeGenerator.courant.verifopUn("boolean")
 	
 	ArrayCodeGenerator.courant.ecrire('tze(vide)')###################################################    'tze(ad1)'
-	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.courant.compteurligne)
-		
+	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.compteurligne)
+	
 	
 	lexical_analyser.acceptKeyword("then")
 	suiteInstr(lexical_analyser) ## {A}
@@ -810,7 +832,7 @@ def altern(lexical_analyser):
 	if lexical_analyser.isKeyword("else"):
 		
 		ArrayCodeGenerator.courant.ecrire('tra(vide)')###################################################    'tra(ad2)'
-		ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.courant.compteurligne)
+		ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
 		
 	
 		##reecriture de tze avec ad1
@@ -916,7 +938,7 @@ def main():
 
 	#pprint.pprint(args)
 	
-	
+
         if outputFilename != "":
                 try:
                         output_file = open(outputFilename, 'w')
@@ -928,13 +950,16 @@ def main():
 
 	
 	
-        # Outputs the generated code to a file
-        instrIndex = 0
-        while instrIndex < len(ArrayCodeGenerator.courant.grotablo):
-        #parcours de codegeneratorun par un dasn l'ordre croissant puis le 0 ?
-        	#output_file.write("%s\n" % str(ArrayCodeGenerator.courant.grotablo[instrIndex]))
-		instrIndex += 1
+	
+	# Outputs the generated code to a file
+       	for i in ArrayCodeGenerator.petitablo:
+		instrIndex = 0
+      		while instrIndex < len(i.grotablo):
 		
+			output_file.write("%s\n" % str(i.grotablo[instrIndex]))
+			instrIndex += 1
+
+
         if outputFilename != "":
                 output_file.close() 
 
