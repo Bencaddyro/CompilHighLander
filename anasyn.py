@@ -31,19 +31,33 @@ class ArrayCodeGenerator(object):
 	
 	@staticmethod
 	def ajoutNNA():
-		ArrayCodeGenerator.petitablo.append(CodeGenerator())
+		print "creation obj"+str(ArrayCodeGenerator.indicecourant)
+		X=CodeGenerator(ArrayCodeGenerator.indicecourant)
+
+		Y=CodeGenerator(50)
+		Z=CodeGenerator(100000000)
+		ArrayCodeGenerator.petitablo.append(X)
+
+		print str(X.scope)
+		print str(ArrayCodeGenerator.petitablo[0].scope)
+		print str(ArrayCodeGenerator.petitablo[-1].scope)
 		ArrayCodeGenerator.indicecourant+=1
 		ArrayCodeGenerator.courant=ArrayCodeGenerator.petitablo[ArrayCodeGenerator.indicecourant]
 
 
 
-class CodeGenerator(object):
+class CodeGenerator:
 	grotablo=[]
 	identifierTable=[]
 	identifierTableTemp=[]
 	piletra=[]
 	piletze=[]
 	pileType=[]
+	scope=None
+	
+	@classmethod
+	def __init__(self,lolu):
+		self.scope=lolu
 	
 	@classmethod
 	def ecrire(self,mot):
@@ -88,18 +102,17 @@ class CodeGenerator(object):
 	@classmethod
 	def ecriretra(self):
 		i=self.piletra.pop()
-		self.grotablo.append('tra('+str(i)+')')
-		self.compteurligne+=1
+		self.ecrire('tra('+str(i)+')')
 		
 	@classmethod
 	def reecriretra(self):
 		i=self.piletra.pop()
-		self.grotablo[i]='tra('+str(self.compteurligne)+')'
+		self.grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
 		
 	@classmethod
 	def reecriretze(self):
 		i=self.piletze.pop()
-		self.grotablo[i]='tze('+str(self.compteurligne)+')'
+		self.grotablo[i]='tze('+str(ArrayCodeGenerator.compteurligne)+')'
 		
 	@classmethod
 	def verifegalType(self):
@@ -764,14 +777,14 @@ def boucle(lexical_analyser):
 	lexical_analyser.acceptKeyword("while")
 
 	###ecrire ad1
-	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.courant.compteurligne)
+	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
 
 	expression(lexical_analyser) #### {C}
 
 	ArrayCodeGenerator.courant.verifopUn("boolean")
 
 	ArrayCodeGenerator.courant.ecrire('tze(vide)')###################################################    'tze(ad2)' /!\attention
-	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.courant.compteurligne)
+	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.compteurligne)
 	
 
 	lexical_analyser.acceptKeyword("loop")
@@ -800,8 +813,8 @@ def altern(lexical_analyser):
 	ArrayCodeGenerator.courant.verifopUn("boolean")
 	
 	ArrayCodeGenerator.courant.ecrire('tze(vide)')###################################################    'tze(ad1)'
-	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.courant.compteurligne)
-		
+	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.compteurligne)
+	
 	
 	lexical_analyser.acceptKeyword("then")
 	suiteInstr(lexical_analyser) ## {A}
@@ -810,7 +823,7 @@ def altern(lexical_analyser):
 	if lexical_analyser.isKeyword("else"):
 		
 		ArrayCodeGenerator.courant.ecrire('tra(vide)')###################################################    'tra(ad2)'
-		ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.courant.compteurligne)
+		ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
 		
 	
 		##reecriture de tze avec ad1
@@ -916,7 +929,7 @@ def main():
 
 	#pprint.pprint(args)
 	
-	
+
         if outputFilename != "":
                 try:
                         output_file = open(outputFilename, 'w')
@@ -927,14 +940,20 @@ def main():
                 output_file = sys.stdout
 
 	
-	
-        # Outputs the generated code to a file
-        instrIndex = 0
-        while instrIndex < len(ArrayCodeGenerator.courant.grotablo):
-        #parcours de codegeneratorun par un dasn l'ordre croissant puis le 0 ?
-        	#output_file.write("%s\n" % str(ArrayCodeGenerator.courant.grotablo[instrIndex]))
-		instrIndex += 1
+
+	# Outputs the generated code to a file
+       	for i in ArrayCodeGenerator.petitablo:
+		instrIndex = 0
+
+		print str(i.scope)
+		print str(len(i.grotablo))
+
+		while instrIndex < len(i.grotablo):
 		
+			output_file.write("%s\n" % str(i.grotablo[instrIndex]))
+			instrIndex += 1
+
+
         if outputFilename != "":
                 output_file.close() 
 
