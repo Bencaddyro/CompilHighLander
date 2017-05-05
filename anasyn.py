@@ -15,125 +15,77 @@ logger = logging.getLogger('anasyn')
 DEBUG = False
 LOGGING_LEVEL = logging.DEBUG
 
-
 class AnaSynException(Exception):
-	def __init__(self, value):
-		self.value = value
-	def __str__(self):
-                return repr(self.value)
-
-class ArrayCodeGenerator(object):
-	petitablo=[]
-	indicecourant=-1
-	courant=None
-	compteurligne=0
-	
-	
-	@staticmethod
-	def ajoutNNA():	
-		ArrayCodeGenerator.petitablo.append(CodeGenerator(ArrayCodeGenerator.indicecourant))
-		ArrayCodeGenerator.indicecourant+=1
-		ArrayCodeGenerator.courant=ArrayCodeGenerator.petitablo[ArrayCodeGenerator.indicecourant]
-
-
-
-class CodeGenerator:
-	grotablo=None
-	identifierTable=None
-	identifierTableTemp=None
-	piletra=None
-	piletze=None
-	pileType=None
-	scope=None
-	ident=None
-
-	def __init__(self,lolu):
-		self.scope=lolu
-		self.grotablo=[]
-		self.identifierTable=[]
-		self.identifierTableTemp=[]
-		self.piletra=[]
-		self.piletze=[]
-		self.pileType=[]
-	
-
-	def ecrire(self,mot):
 	       	self.grotablo.append(mot)
 		ArrayCodeGenerator.compteurligne+=1
 		
 		
-
+	@classmethod
 	def add_identifierTable(self,bula):
 		self.identifierTable.append(bula)
 		
-
+	@classmethod
 	def add_identifierTableTemp(self,bula):
 		self.identifierTableTemp.append(bula)
 		
-	
+	@classmethod
 	def raz_identifierTableTemp(self):
 		self.identifierTableTemp=[]
 		
-
+	@classmethod
 	def set_type_identifierTableTemp(self,ty):
 		for i in self.identifierTableTemp:
 			i.append(ty)
 			
-	
+	@classmethod	
 	def concat(self):
 		self.identifierTable+=self.identifierTableTemp
 
-	
+	@classmethod
 	def getindex(self,ident):
 		for i,[x,y] in enumerate(self.identifierTable):
 			if x==ident:
 				return i
-
-		for i in ArrayCodeGenerator.petitablo:
-			print "------ IDENTIFIER TABLE ------"
-			print str(i.identifierTable)
-			print "------ END OF IDENTIFIER TABLE ------"
-
-
 		assert False,"verboten identifiant \""+ident+"\" non declare at ligne 50 !"
 		
-
+	@classmethod
 	def gettype(self,ident):
 		for [x,y] in self.identifierTable:
 			if x==ident:
 				return y
 			
-
+	@classmethod
 	def ecriretra(self):
 		i=self.piletra.pop()
-		self.ecrire('tra('+str(i)+')')
+		self.grotablo.append('tra('+str(i)+')')
+		ArrayCodeGenerator.compteurligne+=1
 		
-	
+	@classmethod
 	def reecriretra(self):
 		i=self.piletra.pop()
 		self.grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
 		
-
+	@classmethod
 	def reecriretze(self):
 		i=self.piletze.pop()
 		self.grotablo[i]='tze('+str(ArrayCodeGenerator.compteurligne)+')'
 		
-
+	@classmethod
 	def verifegalType(self):
-		print "verifeagltype"+str(self.pileType)
+		print "verifeagltype"+str(ArrayCodeGenerator.pileType)
 		b=self.pileType.pop()
 		a=self.pileType.pop()
 		if(a!=b):
 			assert False,"verboten type "+b+" found but type "+a+" expected ! at ligne 3"
 	
-
+	@classmethod
 	def verifopBin(self,var):
 		print "verifopBin"+str(self.pileType)
 		b=self.pileType.pop()
 		a=self.pileType.pop()
 		if(a!= var or b!=var):
 			assert False,"verboten type "+var+" expected ! at ligne 3"
-
+	@classmethod
 	def verifopUn(self,var):
 		print "verifopUn"+str(self.pileType)
 		a=self.pileType.pop()
@@ -159,27 +111,15 @@ def program(lexical_analyser):
 	
 	
 def specifProgPrinc(lexical_analyser):
-
-	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
-	ArrayCodeGenerator.courant.ecrire('tra(vide)')###################################################    'tra(fin de declaration des blocs NNA)'
-
-
 	lexical_analyser.acceptKeyword("procedure")
 	ident = lexical_analyser.acceptIdentifier()
 	logger.debug("Name of program : "+ident)
 	
-def  corpsProgPrinc(lexical_analyser):##########################################################################################################################################################
+def  corpsProgPrinc(lexical_analyser):
 	if not lexical_analyser.isKeyword("begin"):
 		logger.debug("Parsing declarations")
 		partieDecla(lexical_analyser)
 		logger.debug("End of declarations")
-
-	else:
-		i=ArrayCodeGenerator.petitablo[0].piletra.pop()
-		ArrayCodeGenerator.petitablo[0].grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
-		ArrayCodeGenerator.ajoutNNA()
-		#################attention re-ecrire le tra, si pas de partie declarative
-
 	lexical_analyser.acceptKeyword("begin")
 
 	if not lexical_analyser.isKeyword("end"):
@@ -194,19 +134,10 @@ def  corpsProgPrinc(lexical_analyser):##########################################
 def partieDecla(lexical_analyser):
         if lexical_analyser.isKeyword("procedure") or lexical_analyser.isKeyword("function") :
                 listeDeclaOp(lexical_analyser)
-		
-		i=ArrayCodeGenerator.petitablo[0].piletra.pop()
-		ArrayCodeGenerator.petitablo[0].grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
-		ArrayCodeGenerator.ajoutNNA()
-		#######################re-ecriture du 1er tra !
-		if not lexical_analyser.isKeyword("begin"):
-			listeDeclaVar(lexical_analyser)
+                if not lexical_analyser.isKeyword("begin"):
+                        listeDeclaVar(lexical_analyser)
         
         else:
-		i=ArrayCodeGenerator.petitablo[0].piletra.pop()
-		ArrayCodeGenerator.petitablo[0].grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
-		###########################################################################re-ecriture du premier tra !
-		ArrayCodeGenerator.ajoutNNA()
                 listeDeclaVar(lexical_analyser)                
 
 def listeDeclaOp(lexical_analyser):
@@ -237,6 +168,7 @@ def procedure(lexical_analyser):
 	lexical_analyser.acceptKeyword("is")
 	corpsProc(lexical_analyser)
 	
+	ArrayCodeGenerator.courant.ecrire('retourProc()')
 
 def fonction(lexical_analyser):
 	lexical_analyser.acceptKeyword("function")
@@ -255,14 +187,17 @@ def fonction(lexical_analyser):
 	lexical_analyser.acceptKeyword("is")
 	corpsFonct(lexical_analyser)
 
-def corpsProc(lexical_analyser):##########################################################################################################################################################
+	#############################################################Fin de fonction###################
+	ArrayCodeGenerator.courant.ecrire('retourFonct()')
+
+def corpsProc(lexical_analyser):
 	if not lexical_analyser.isKeyword("begin"):
 		partieDeclaProc(lexical_analyser)
 	lexical_analyser.acceptKeyword("begin")
 	suiteInstr(lexical_analyser)
 	lexical_analyser.acceptKeyword("end")
 
-def corpsFonct(lexical_analyser):##########################################################################################################################################################
+def corpsFonct(lexical_analyser):
 	if not lexical_analyser.isKeyword("begin"):
 		partieDeclaProc(lexical_analyser)
 	lexical_analyser.acceptKeyword("begin")
@@ -412,11 +347,17 @@ def instr(lexical_analyser):
 			ArrayCodeGenerator.courant.ecrire('affectation()')###################################################    'affectation()'
 			
 			
-			
+		
+	
 		elif lexical_analyser.isCharacter("("):
 			lexical_analyser.acceptCharacter("(")
-			if not lexical_analyser.isCharacter(")"):
-				listePe(lexical_analyser)
+			if not lexical_analyser.isCharacter(")"): ###################################     Appel fonction ou procedure AVEC parametres
+				ArrayCodeGenerator.courant.ecrire('reserverBloc()')
+				listePe(lexical_analyser)	
+				ArrayCodeGenerator.courant.ecrire('traStat('+ArrayCodeGenerator.petitablo[getIndex_table_ident(ident)].adresseDebut+','+ArrayCodeGenerator.petitablo[getIndex_table_ident(ident)].nbParam)	
+			else:
+				ArrayCodeGenerator.courant.ecrire('reserverBloc()')	###################################     Appel fonction ou procedure SANS parametre
+				ArrayCodeGenerator.courant.ecrire('traStat('+ArrayCodeGenerator.petitablo[getIndex_table_ident(ident)].adresseDebut+','+0)
 
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
@@ -802,14 +743,14 @@ def boucle(lexical_analyser):
 	lexical_analyser.acceptKeyword("while")
 
 	###ecrire ad1
-	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
+	ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.courant.compteurligne)
 
 	expression(lexical_analyser) #### {C}
 
 	ArrayCodeGenerator.courant.verifopUn("boolean")
 
 	ArrayCodeGenerator.courant.ecrire('tze(vide)')###################################################    'tze(ad2)' /!\attention
-	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.compteurligne)
+	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.courant.compteurligne)
 	
 
 	lexical_analyser.acceptKeyword("loop")
@@ -838,8 +779,8 @@ def altern(lexical_analyser):
 	ArrayCodeGenerator.courant.verifopUn("boolean")
 	
 	ArrayCodeGenerator.courant.ecrire('tze(vide)')###################################################    'tze(ad1)'
-	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.compteurligne)
-	
+	ArrayCodeGenerator.courant.piletze.append(ArrayCodeGenerator.courant.compteurligne)
+		
 	
 	lexical_analyser.acceptKeyword("then")
 	suiteInstr(lexical_analyser) ## {A}
@@ -848,7 +789,7 @@ def altern(lexical_analyser):
 	if lexical_analyser.isKeyword("else"):
 		
 		ArrayCodeGenerator.courant.ecrire('tra(vide)')###################################################    'tra(ad2)'
-		ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.compteurligne)
+		ArrayCodeGenerator.courant.piletra.append(ArrayCodeGenerator.courant.compteurligne)
 		
 	
 		##reecriture de tze avec ad1
@@ -944,10 +885,9 @@ def main():
 	
 
         if args.show_ident_table:
-		for i in ArrayCodeGenerator.petitablo:
-			print "------ IDENTIFIER TABLE ------"
-			print str(i.identifierTable)
-			print "------ END OF IDENTIFIER TABLE ------"
+                print "------ IDENTIFIER TABLE ------"
+                print str(ArrayCodeGenerator.courant.identifierTable)
+                print "------ END OF IDENTIFIER TABLE ------"
 
 		print "------ TableType ------"
 		print str(ArrayCodeGenerator.courant.pileType)
@@ -955,7 +895,7 @@ def main():
 
 	#pprint.pprint(args)
 	
-
+	
         if outputFilename != "":
                 try:
                         output_file = open(outputFilename, 'w')
@@ -967,16 +907,13 @@ def main():
 
 	
 	
-	
-	# Outputs the generated code to a file
-       	for i in ArrayCodeGenerator.petitablo:
-		instrIndex = 0
-      		while instrIndex < len(i.grotablo):
+        # Outputs the generated code to a file
+        instrIndex = 0
+        while instrIndex < len(ArrayCodeGenerator.courant.grotablo):
+        #parcours de codegeneratorun par un dasn l'ordre croissant puis le 0 ?
+        	#output_file.write("%s\n" % str(ArrayCodeGenerator.courant.grotablo[instrIndex]))
+		instrIndex += 1
 		
-			output_file.write("%s\n" % str(i.grotablo[instrIndex]))
-			instrIndex += 1
-
-
         if outputFilename != "":
                 output_file.close() 
 
