@@ -1,6 +1,33 @@
 # coding: utf-8
 import argparse
 
+
+
+
+def zerzer():
+	print("\n    .adOOOOOOOOOba.       ")
+	print("   dOOOOOOOOOOOOOOOb       ")
+	print("  dOOOOOOOOOOOOOOOOOb       ")
+	print(" dOOOOOOOOOOOOOOOOOOOb       ")
+	print("|OOOOOOOOOOOOOOOOOOOOO|       ")
+	print("OP'~'YOOOOOOOOOOOP'~`YO       ")
+	print("OO     `YOOOOOP'     OO       ")
+	print("OOb      `OOO'      dOO       ")
+	print("YOOo      OOO      oOOP       ")
+	print("`OOOo     OOO     oOOO'       ")
+	print(" `OOOb._,dOOOb._,dOOO'       ")
+	print("  `OOOOOOOOOOOOOOOOO'       ")
+	print("   OOOOOOOOOOOOOOOOO        ")
+	print("   YOOOOOOOOOOOOOOOP       ")
+	print("   `OOOOOOOOOOOOOOO'       ")
+	print("    `OOOOOOOOOOOOO'       ")
+	print("     `OOOOOOOOOOO'       ")
+	print("       `~OOOOO~'        ")
+	
+	
+	
+	
+	
 def openTab(file):
     f=open(file,'r')
     lines=f.readlines()
@@ -28,18 +55,16 @@ def test():
 
 
 def executer(file,stack,line,sbs):
-	##i=0
 	pile=Pile()
 	lines=openTab(file)
 	while pile.CO<len(lines):
-		if stack or sbs :
-			pile.affiche()
 		if line or sbs:
 			print lines[pile.CO]
 		execline(lines[pile.CO],pile,pile.CO)
+		if stack or sbs :
+			pile.affiche()
 		if(sbs):
 			raw_input()
-		i+=1
 		##pile.affiche()
 		##i=temp
 
@@ -212,7 +237,7 @@ class Pile:
 	def __init__(self):
 		self.stack = []
 		self.IP=-1
-		self.base=-1
+		self.base=-2
 		self.CO=0
 		
 		
@@ -447,6 +472,7 @@ def main():
 	parser.add_argument('-s','--stack', help='Print the stack trace',action="store_true")
 	parser.add_argument('-l','--line', help='Print the execution trace',action="store_true")
 	parser.add_argument('-sbs','--step_by_step', help='Use step by step running',action="store_true")
+	parser.add_argument('-z','--easter', help='Be careful about that',action="store_true")
 
 	args = parser.parse_args()
 
@@ -464,6 +490,9 @@ def main():
 		print "I want a coffee !"
 	else:
 		print "I'd like a cup of water ! "
+		
+	if args.easter :
+		zerzer()
 	
 ########################################################################				 
 
@@ -475,3 +504,9 @@ if __name__ == "__main__":
 		
 		
 		
+		
+		
+		
+
+		
+
