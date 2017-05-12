@@ -435,7 +435,7 @@ def instr(lexical_analyser):
 			#ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
 			
 			# affectation			
-			ArrayCodeGenerator.courant.ecrire('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
+			ArrayCodeGenerator.courant.ecrire('empilerAd('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
 			
 			lexical_analyser.acceptSymbol(":=")
                         expression(lexical_analyser)
@@ -466,8 +466,6 @@ def instr(lexical_analyser):
 
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
-			
-			
 			
 			
 		else:
@@ -768,13 +766,9 @@ def elemPrim(lexical_analyser):
 			logger.debug("Call to function: " + ident)
 		else:
 			logger.debug("Use of an identifier as an expression: " + ident)     
-
 			ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
-
-			ArrayCodeGenerator.courant.ecrire('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
-			
+			ArrayCodeGenerator.courant.ecrire('empilerParam('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################    'empiler(ad(ident))'
 			ArrayCodeGenerator.courant.ecrire('valeurPile()')###################################################    'valeurPile()'
-			
 			
 	else:
 		logger.error("Unknown Value!")
@@ -832,7 +826,7 @@ def es(lexical_analyser):
 		lexical_analyser.acceptKeyword("get")
 		lexical_analyser.acceptCharacter("(")
 		ident = lexical_analyser.acceptIdentifier()
-		ArrayCodeGenerator.courant.ecrire('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################empiler ad(ident)
+		ArrayCodeGenerator.courant.ecrire('empilerAd('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################empiler ad(ident)
 		
 		print "empile "+ArrayCodeGenerator.courant.gettype(ident)+" apres "+ident
 		ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
