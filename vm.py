@@ -31,12 +31,11 @@ def executer(file,stack,line,sbs):
 	pile=Pile()
 	lines=openTab(file)
 	while pile.CO<len(lines):
-		if stack or sbs :
-			pile.affiche()
-			print(pile.base)
 		if line or sbs:
 			print lines[pile.CO]
 		execline(lines[pile.CO],pile,pile.CO)
+		if stack or sbs :
+			pile.affiche()
 		if(sbs):
 			raw_input()
 		##pile.affiche()
@@ -254,12 +253,12 @@ class Pile:
 	def affectation(self):
 		val=self.stack.pop()
 		adr=self.stack.pop()
-		self.stack[self.base+2+adr]=val
+		self.stack[adr]=val
 		self.IP=self.IP-2
 		self.CO+=1
 		
 	def valeurPile(self):
-		self.stack[self.IP]=self.stack[self.stack[self.IP]+self.base+2]
+		self.stack[self.IP]=self.stack[self.stack[self.IP]]
 		self.CO+=1
 
 	##_____Entrées-Sorties________________________________________________________________________
