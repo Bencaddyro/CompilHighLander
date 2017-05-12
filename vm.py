@@ -28,18 +28,17 @@ def test():
 
 
 def executer(file,stack,line,sbs):
-	##i=0
 	pile=Pile()
 	lines=openTab(file)
 	while pile.CO<len(lines):
 		if stack or sbs :
 			pile.affiche()
+			print(pile.base)
 		if line or sbs:
 			print lines[pile.CO]
 		execline(lines[pile.CO],pile,pile.CO)
 		if(sbs):
 			raw_input()
-		i+=1
 		##pile.affiche()
 		##i=temp
 
@@ -212,7 +211,7 @@ class Pile:
 	def __init__(self):
 		self.stack = []
 		self.IP=-1
-		self.base=-1
+		self.base=-2
 		self.CO=0
 		
 		
@@ -255,12 +254,12 @@ class Pile:
 	def affectation(self):
 		val=self.stack.pop()
 		adr=self.stack.pop()
-		self.stack[adr]=val
+		self.stack[self.base+2+adr]=val
 		self.IP=self.IP-2
 		self.CO+=1
 		
 	def valeurPile(self):
-		self.stack[self.IP]=self.stack[self.stack[self.IP]]
+		self.stack[self.IP]=self.stack[self.stack[self.IP]+self.base+2]
 		self.CO+=1
 
 	##_____Entrées-Sorties________________________________________________________________________
@@ -473,5 +472,4 @@ if __name__ == "__main__":
 		
 		
 		
-		
-		
+
