@@ -89,6 +89,12 @@ class CodeGenerator:
 	def add_identifierTableTemp(self,bula):
 		self.identifierTableTemp.append(bula)
 		
+	def get_nbvariable(self):
+		res=0
+		for i in self.identifierTable:
+			if (i[1]=='variable'):
+				res+=1
+		return res
 	
 	def raz_identifierTableTemp(self):
 		self.identifierTableTemp=[]
@@ -371,7 +377,7 @@ def declaVar(lexical_analyser):
 	
 	
 	
-	ArrayCodeGenerator.courant.ecrire('reserver('+str(len(ArrayCodeGenerator.courant.identifierTable))+')')###################################################    'reserver(n)'
+	ArrayCodeGenerator.courant.ecrire('reserver('+str(ArrayCodeGenerator.courant.get_nbvariable())+')')###################################################    'reserver(n)'
 ######################################WHALALALALALA
 	
 
@@ -768,7 +774,7 @@ def elemPrim(lexical_analyser):
 			logger.debug("Use of an identifier as an expression: " + ident)     
 			ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
 			ArrayCodeGenerator.courant.ecrire('empilerParam('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################    'empiler(ad(ident))'
-			ArrayCodeGenerator.courant.ecrire('valeurPile()')###################################################    'valeurPile()'
+			#ArrayCodeGenerator.courant.ecrire('valeurPile()')###################################################    'valeurPile()'
 			
 	else:
 		logger.error("Unknown Value!")
