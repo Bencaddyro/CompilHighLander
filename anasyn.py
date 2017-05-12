@@ -242,7 +242,7 @@ def procedure(lexical_analyser):
 	ArrayCodeGenerator.ajoutNNA()
 	
 	ident = lexical_analyser.acceptIdentifier()
-	ajoutDictionnaire(ident,ArrayCodeGenerator.indiceCourant)#################ajout nom ident dans dictionnaire
+	ArrayCodeGenerator.ajoutDictionnaire(ident,ArrayCodeGenerator.indiceCourant)#################ajout nom ident dans dictionnaire
 	logger.debug("Name of procedure : "+ident)
 	
 	#############################################ajout ident a la table des identifiants global 
@@ -446,10 +446,7 @@ def instr(lexical_analyser):
 			else:
 			
 				ArrayCodeGenerator.courant.ecrire('reserverBloc()')	###################################     Appel fonction ou procedure SANS parametre
-+				ArrayCodeGenerator.courant.ecrire('traStat('+ArrayCodeGenerator.petitablo[retourDictionnaire(ident)].adresseDebut+','+0)
- 
- 
-
+				ArrayCodeGenerator.courant.ecrire('traStat('+ArrayCodeGenerator.petitablo[retourDictionnaire(ident)].adresseDebut+','+0)
 
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
