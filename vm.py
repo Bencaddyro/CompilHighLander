@@ -441,7 +441,7 @@ class Pile:
 			self.IP-=1
 		nouvCO=self.stack.pop()
 		self.IP-=1
-		self.CO=nouvCO+2
+		self.CO=nouvCO
 		self.base=self.stack.pop()
 		self.baseAct=self.base
 		self.IP-=1
