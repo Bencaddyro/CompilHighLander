@@ -28,7 +28,6 @@ def test():
 
 
 def executer(file,stack,line,sbs):
-	##i=0
 	pile=Pile()
 	lines=openTab(file)
 	while pile.CO<len(lines):
@@ -39,7 +38,6 @@ def executer(file,stack,line,sbs):
 		execline(lines[pile.CO],pile,pile.CO)
 		if(sbs):
 			raw_input()
-		i+=1
 		##pile.affiche()
 		##i=temp
 
@@ -473,5 +471,4 @@ if __name__ == "__main__":
 		
 		
 		
-		
-		
+
