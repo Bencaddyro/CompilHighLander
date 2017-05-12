@@ -59,6 +59,7 @@ class CodeGenerator:
 	piletze=None
 	pileType=None
 
+	nbParam=None
 	ident=None
 	adresseDebut=None
 
@@ -71,6 +72,7 @@ class CodeGenerator:
 		self.piletze=[]
 		self.pileType=[]
 		self.adresseDebut=ArrayCodeGenerator.compteurligne
+		self.nbParam=0
 
 	
 
@@ -95,15 +97,19 @@ class CodeGenerator:
 	def set_type_identifierTableTemp(self,ty):
 		for i in self.identifierTableTemp:
 			i.append(ty)
-			
+	
+	def set_mode_identifierTableTemp(self,mode):
+		for i in self.identifierTableTemp:
+			i.append(mode)
 	
 	def concat(self):
 		self.identifierTable+=self.identifierTableTemp
+		self.identifierTableTemp=[]
 
 	
 	def getindex(self,ident):
-		for i,[x,y] in enumerate(self.identifierTable):
-			if x==ident:
+		for i,j in enumerate(self.identifierTable):
+			if j[0]==ident:
 				return i
 
 		for i in ArrayCodeGenerator.petitablo:
@@ -116,9 +122,10 @@ class CodeGenerator:
 		
 
 	def gettype(self,ident):
-		for [x,y] in self.identifierTable:
-			if x==ident:
-				return y
+		#for [x,y,z] in self.identifierTable:
+			#if x==ident:
+				#return '0'
+		return 'camarche'
 			
 
 	def ecriretra(self):
@@ -138,24 +145,24 @@ class CodeGenerator:
 
 	def verifegalType(self):
 		print "verifeagltype"+str(self.pileType)
-		b=self.pileType.pop()
-		a=self.pileType.pop()
-		if(a!=b):
-			assert False,"verboten type "+b+" found but type "+a+" expected ! at ligne 3"
+		#b=self.pileType.pop()
+		#a=self.pileType.pop()
+		#if(a!=b):
+			#assert False,"verboten type "+b+" found but type "+a+" expected ! at ligne 3"
 	
 
 	def verifopBin(self,var):
 		print "verifopBin"+str(self.pileType)
-		b=self.pileType.pop()
-		a=self.pileType.pop()
-		if(a!= var or b!=var):
-			assert False,"verboten type "+var+" expected ! at ligne 3"
+		#b=self.pileType.pop()
+		#a=self.pileType.pop()
+		#if(a!= var or b!=var):
+			#assert False,"verboten type "+var+" expected ! at ligne 3"
 
 	def verifopUn(self,var):
 		print "verifopUn"+str(self.pileType)
-		a=self.pileType.pop()
-		if(a!= var):
-			assert False,"verboten type "+var+" expected ! at ligne 3"
+		#a=self.pileType.pop()
+		#if(a!= var):
+			#assert False,"verboten type "+var+" expected ! at ligne 3"
 	
 		
 
@@ -263,7 +270,7 @@ def fonction(lexical_analyser):
 	ArrayCodeGenerator.ajoutNNA()
 	
 	ident = lexical_analyser.acceptIdentifier()
-	ajoutDictionnaire(ident,ArrayCodeGenerator.indiceCourant)##########ajout ident au dico 
+	ArrayCodeGenerator.ajoutDictionnaire(ident,ArrayCodeGenerator.indicecourant)##########ajout ident au dico 
 	logger.debug("Name of function : "+ident)
 	
 	partieFormelle(lexical_analyser)
@@ -294,6 +301,7 @@ def partieFormelle(lexical_analyser):
 	lexical_analyser.acceptCharacter("(")
 	if not lexical_analyser.isCharacter(")"):
 		listeSpecifFormelles(lexical_analyser)
+	ArrayCodeGenerator.courant.nbParam=len(ArrayCodeGenerator.courant.identifierTable)###remplir la veleur de nbparam pour le bloc NNA
 	lexical_analyser.acceptCharacter(")")
 
 def listeSpecifFormelles(lexical_analyser):
@@ -307,15 +315,19 @@ def specif(lexical_analyser):
 	lexical_analyser.acceptCharacter(":")
 	if lexical_analyser.isKeyword("in"):
 		mode(lexical_analyser)
-                
+	else:    
+		ArrayCodeGenerator.courant.set_mode_identifierTableTemp('paramin')
 	nnpType(lexical_analyser)
 
 def mode(lexical_analyser):
 	lexical_analyser.acceptKeyword("in")
 	if lexical_analyser.isKeyword("out"):
+		ArrayCodeGenerator.courant.set_mode_identifierTableTemp('paramout')
 		lexical_analyser.acceptKeyword("out")
 		logger.debug("in out parameter")                
 	else:
+		ArrayCodeGenerator.courant.set_mode_identifierTableTemp('paramin')
+		
 		logger.debug("in parameter")
 
 def nnpType(lexical_analyser):
@@ -338,7 +350,7 @@ def nnpType(lexical_analyser):
 		logger.error("Unknown type found <"+ lexical_analyser.get_value() +">!")
 		raise AnaSynException("Unknown type found <"+ lexical_analyser.get_value() +">!")
 	
-	############################################		
+	###########################################	
 	ArrayCodeGenerator.courant.concat()
 
 def partieDeclaProc(lexical_analyser):
@@ -353,13 +365,14 @@ def declaVar(lexical_analyser):
 	listeIdent(lexical_analyser)
 	lexical_analyser.acceptCharacter(":")
 	logger.debug("now parsing type...")
+	ArrayCodeGenerator.courant.set_mode_identifierTableTemp('variable')
 	nnpType(lexical_analyser)
 	lexical_analyser.acceptCharacter(";")
 	
-	ArrayCodeGenerator.courant.ecrire('reserver('+str(len(ArrayCodeGenerator.courant.identifierTableTemp))+')')###################################################    'reserver(n)'
 	
 	
-	ArrayCodeGenerator.courant.raz_identifierTableTemp()
+	ArrayCodeGenerator.courant.ecrire('reserver('+str(len(ArrayCodeGenerator.courant.identifierTable))+')')###################################################    'reserver(n)'
+######################################WHALALALALALA
 	
 
 def listeIdent(lexical_analyser):
@@ -418,10 +431,10 @@ def instr(lexical_analyser):
 		
 		if lexical_analyser.isSymbol(":="):
 			
-			print "empile "+ArrayCodeGenerator.courant.gettype(ident)+" a cause "+ident
-			ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
+			#print "empile "+ArrayCodeGenerator.courant.gettype(ident)+" a cause "+ident
+			#ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
 			
-			# affectation
+			# affectation			
 			ArrayCodeGenerator.courant.ecrire('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
 			
 			lexical_analyser.acceptSymbol(":=")
@@ -443,12 +456,12 @@ def instr(lexical_analyser):
 				
 				listePe(lexical_analyser)
 				
-				ArrayCodeGenerator.courant.ecrire('traStat('+ArrayCodeGenerator.petitablo[retourDictionnaire(ident)].adresseDebut+','+ArrayCodeGenerator.petitablo[retourDictionnaire(ident)].nbParam)############traStat(magicaddesse)
+				ArrayCodeGenerator.courant.ecrire('traStat('+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].adresseDebut)+','+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].nbParam)+')')###############################################     Appel procedure AVEC parametre
 
 
 			else:
 			
-				ArrayCodeGenerator.courant.ecrire('reserverBloc()')	###################################     Appel fonction ou procedure SANS parametre
+				ArrayCodeGenerator.courant.ecrire('reserverBloc()')	###################################     Appel procedure SANS parametre
 				ArrayCodeGenerator.courant.ecrire('traStat('+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].adresseDebut)+',0)')
 
 			lexical_analyser.acceptCharacter(")")
@@ -741,8 +754,13 @@ def elemPrim(lexical_analyser):
 
 		if lexical_analyser.isCharacter("("):			# Appel fonct
 			lexical_analyser.acceptCharacter("(")
+			
+			ArrayCodeGenerator.courant.ecrire('reserverBloc()')#############reserverBloc()	
+			
 			if not lexical_analyser.isCharacter(")"):
 				listePe(lexical_analyser)
+				
+			ArrayCodeGenerator.courant.ecrire('traStat('+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].adresseDebut)+','+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].nbParam)+')')###############################################     Appel fonction AVEC parametre
 
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
@@ -985,7 +1003,9 @@ def main():
 			print "------ IDENTIFIER TABLE ------"
 			print str(i.identifierTable)
 			print "------ END OF IDENTIFIER TABLE ------"
-
+		print "------ Dictionna ------"
+		print str(ArrayCodeGenerator.dictionnaire)
+		print "------           ------"
 		print "------ TableType ------"
 		print str(ArrayCodeGenerator.courant.pileType)
 		print "------           ------"
