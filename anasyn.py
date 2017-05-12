@@ -128,12 +128,12 @@ class CodeGenerator:
 	
 	def reecriretra(self):
 		i=self.piletra.pop()
-		self.grotablo[i]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
+		self.grotablo[i-self.adresseDebut-1]='tra('+str(ArrayCodeGenerator.compteurligne)+')'
 		
 
 	def reecriretze(self):
 		i=self.piletze.pop()
-		self.grotablo[i]='tze('+str(ArrayCodeGenerator.compteurligne)+')'
+		self.grotablo[i-self.adresseDebut-1]='tze('+str(ArrayCodeGenerator.compteurligne)+')'
 		
 
 	def verifegalType(self):
