@@ -33,14 +33,14 @@ class ArrayCodeGenerator(object):
 	
 	@staticmethod
 	def ajoutDictionnaire(i, j):
-			self.dicionnaire.append([i,j])
+			ArrayCodeGenerator.dictionnaire.append([i,j])
 	
 	
 	@staticmethod
 	def retourDictionnaire(i):
-		for k in self.dictionnaire:
+		for k in ArrayCodeGenerator.dictionnaire:
 			if k[0]==i:
-				return k[j]
+				return k[1]
 	
 	
 	@staticmethod
@@ -58,17 +58,20 @@ class CodeGenerator:
 	piletra=None
 	piletze=None
 	pileType=None
-	scope=None
+
 	ident=None
+	adresseDebut=None
 
 	def __init__(self,lolu):
-		self.scope=lolu
+		
 		self.grotablo=[]
 		self.identifierTable=[]
 		self.identifierTableTemp=[]
 		self.piletra=[]
 		self.piletze=[]
 		self.pileType=[]
+		self.adresseDebut=ArrayCodeGenerator.compteurligne
+
 	
 
 	def ecrire(self,mot):
@@ -242,7 +245,7 @@ def procedure(lexical_analyser):
 	ArrayCodeGenerator.ajoutNNA()
 	
 	ident = lexical_analyser.acceptIdentifier()
-	ArrayCodeGenerator.ajoutDictionnaire(ident,ArrayCodeGenerator.indiceCourant)#################ajout nom ident dans dictionnaire
+	ArrayCodeGenerator.ajoutDictionnaire(ident,ArrayCodeGenerator.indicecourant)#################ajout nom ident dans dictionnaire
 	logger.debug("Name of procedure : "+ident)
 	
 	#############################################ajout ident a la table des identifiants global 
@@ -446,7 +449,7 @@ def instr(lexical_analyser):
 			else:
 			
 				ArrayCodeGenerator.courant.ecrire('reserverBloc()')	###################################     Appel fonction ou procedure SANS parametre
-				ArrayCodeGenerator.courant.ecrire('traStat('+ArrayCodeGenerator.petitablo[retourDictionnaire(ident)].adresseDebut+','+0)
+				ArrayCodeGenerator.courant.ecrire('traStat('+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].adresseDebut)+',0)')
 
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
