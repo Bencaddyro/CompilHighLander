@@ -29,6 +29,11 @@ class ArrayCodeGenerator(object):
 	compteurligne=0
 	dictionnaire=[]
 	
+	########Flags
+
+	flagTypeFonct=0
+	flagAffect=0
+	
 	
 	
 	@staticmethod
@@ -58,6 +63,8 @@ class CodeGenerator:
 	piletra=None
 	piletze=None
 	pileType=None
+	pileAffect=None
+	typeRetour=None
 
 	nbParam=None
 	ident=None
@@ -71,6 +78,7 @@ class CodeGenerator:
 		self.piletra=[]
 		self.piletze=[]
 		self.pileType=[]
+		self.pileAffect=[]
 		self.adresseDebut=ArrayCodeGenerator.compteurligne
 		self.nbParam=0
 
@@ -89,12 +97,6 @@ class CodeGenerator:
 	def add_identifierTableTemp(self,bula):
 		self.identifierTableTemp.append(bula)
 		
-	def get_nbvariable(self):
-		res=0
-		for i in self.identifierTable:
-			if (i[1]=='variable'):
-				res+=1
-		return res
 	
 	def raz_identifierTableTemp(self):
 		self.identifierTableTemp=[]
@@ -128,11 +130,14 @@ class CodeGenerator:
 		
 
 	def gettype(self,ident):
-		#for [x,y,z] in self.identifierTable:
-			#if x==ident:
-				#return '0'
-		return 'camarche'
+		for i in self.identifierTable:
+			if i[0]==ident:
+				return i[-1]
 			
+	def getAffect(self,ident):
+		for i in self.identifierTable:
+			if i[0]==ident:
+				return i[1]
 
 	def ecriretra(self):
 		i=self.piletra.pop()
@@ -151,24 +156,28 @@ class CodeGenerator:
 
 	def verifegalType(self):
 		print "verifeagltype"+str(self.pileType)
-		#b=self.pileType.pop()
-		#a=self.pileType.pop()
-		#if(a!=b):
-			#assert False,"verboten type "+b+" found but type "+a+" expected ! at ligne 3"
-	
+		b=self.pileType.pop()
+		a=self.pileType.pop()
+		if(a!=b):
+			assert False,"verboten type "+b+" found but type "+a+" expected ! at ligne 3"
+		if(ArrayCodeGenerator.flagAffect):
+			affect=self.pileAffect.pop()
+			if(affect=='paramin'):
+				assert False,"verboten: tentative d'affectation d'un parametre in (at ligne 3)"
+			
 
 	def verifopBin(self,var):
 		print "verifopBin"+str(self.pileType)
-		#b=self.pileType.pop()
-		#a=self.pileType.pop()
-		#if(a!= var or b!=var):
-			#assert False,"verboten type "+var+" expected ! at ligne 3"
+		b=self.pileType.pop()
+		a=self.pileType.pop()
+		if(a!= var or b!=var):
+			assert False,"verboten type "+var+" expected ! at ligne 3"
 
 	def verifopUn(self,var):
 		print "verifopUn"+str(self.pileType)
-		#a=self.pileType.pop()
-		#if(a!= var):
-			#assert False,"verboten type "+var+" expected ! at ligne 3"
+		a=self.pileType.pop()
+		if(a!= var):
+			assert False,"verboten type "+var+" expected ! at ligne 3"
 	
 		
 
@@ -282,7 +291,10 @@ def fonction(lexical_analyser):
 	partieFormelle(lexical_analyser)
 
 	lexical_analyser.acceptKeyword("return")
+
+	ArrayCodeGenerator.flagTypeFonct=1         ############### Flag : "Tu vas reconnaitre le type de retour d'une fonction"
 	nnpType(lexical_analyser)
+	ArrayCodeGenerator.flagTypeFonct=0
         
 	lexical_analyser.acceptKeyword("is")
 	corpsFonct(lexical_analyser)
@@ -343,21 +355,30 @@ def nnpType(lexical_analyser):
 		logger.debug("integer type")
 		
 		#########################################
-		ArrayCodeGenerator.courant.set_type_identifierTableTemp('integer')
+		if ArrayCodeGenerator.flagTypeFonct:
+			ArrayCodeGenerator.courant.typeRetour='integer'           ########## Si on est au niveau du type de la valeur de retour d'une fonction, il faut ajouter son type au bloc NNA
+
+		else:
+			ArrayCodeGenerator.courant.set_type_identifierTableTemp('integer')
 		
 	elif lexical_analyser.isKeyword("boolean"):
 		lexical_analyser.acceptKeyword("boolean")
 		logger.debug("boolean type")
 		
 		########################################
-		ArrayCodeGenerator.courant.set_type_identifierTableTemp('boolean')
+		if ArrayCodeGenerator.flagTypeFonct:
+			ArrayCodeGenerator.courant.typeRetour='boolean'           ########## Si on est au niveau du type de la valeur de retour d'une fonction, il faut ajouter son type au bloc NNA
+
+		else:
+			ArrayCodeGenerator.courant.set_type_identifierTableTemp('boolean')
 		
 	else:
 		logger.error("Unknown type found <"+ lexical_analyser.get_value() +">!")
 		raise AnaSynException("Unknown type found <"+ lexical_analyser.get_value() +">!")
 	
 	###########################################	
-	ArrayCodeGenerator.courant.concat()
+	if not ArrayCodeGenerator.flagTypeFonct:
+		ArrayCodeGenerator.courant.concat()
 
 def partieDeclaProc(lexical_analyser):
 	listeDeclaVar(lexical_analyser)
@@ -377,7 +398,7 @@ def declaVar(lexical_analyser):
 	
 	
 	
-	ArrayCodeGenerator.courant.ecrire('reserver('+str(ArrayCodeGenerator.courant.get_nbvariable())+')')###################################################    'reserver(n)'
+	ArrayCodeGenerator.courant.ecrire('reserver('+str(len(ArrayCodeGenerator.courant.identifierTable))+')')###################################################    'reserver(n)'
 ######################################WHALALALALALA
 	
 
@@ -437,17 +458,20 @@ def instr(lexical_analyser):
 		
 		if lexical_analyser.isSymbol(":="):
 			
-			#print "empile "+ArrayCodeGenerator.courant.gettype(ident)+" a cause "+ident
-			#ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
+			print "empile "+ArrayCodeGenerator.courant.gettype(ident)+" a cause "+ident
+			ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
+			ArrayCodeGenerator.courant.pileAffect.append(ArrayCodeGenerator.courant.getAffect(ident))
 			
 			# affectation			
-			ArrayCodeGenerator.courant.ecrire('empilerAd('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
+			ArrayCodeGenerator.courant.ecrire('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
 			
 			lexical_analyser.acceptSymbol(":=")
                         expression(lexical_analyser)
 			logger.debug("parsed affectation")
 
+			ArrayCodeGenerator.flagAffect=1
 			ArrayCodeGenerator.courant.verifegalType()
+			ArrayCodeGenerator.flagAffect=0
 
 			ArrayCodeGenerator.courant.ecrire('affectation()')###################################################    'affectation()'
 			
@@ -472,6 +496,8 @@ def instr(lexical_analyser):
 
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
+			
+			
 			
 			
 		else:
@@ -765,6 +791,9 @@ def elemPrim(lexical_analyser):
 				listePe(lexical_analyser)
 				
 			ArrayCodeGenerator.courant.ecrire('traStat('+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].adresseDebut)+','+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].nbParam)+')')###############################################     Appel fonction AVEC parametre
+			
+			ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].typeRetour) ############# Empile le type de retour de la fonction 
+
 
 			lexical_analyser.acceptCharacter(")")
 			logger.debug("parsed procedure call")
@@ -772,9 +801,13 @@ def elemPrim(lexical_analyser):
 			logger.debug("Call to function: " + ident)
 		else:
 			logger.debug("Use of an identifier as an expression: " + ident)     
+
 			ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
-			ArrayCodeGenerator.courant.ecrire('empilerParam('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################    'empiler(ad(ident))'
-			#ArrayCodeGenerator.courant.ecrire('valeurPile()')###################################################    'valeurPile()'
+
+			ArrayCodeGenerator.courant.ecrire('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')###################################################    'empiler(ad(ident))'
+			
+			ArrayCodeGenerator.courant.ecrire('valeurPile()')###################################################    'valeurPile()'
+			
 			
 	else:
 		logger.error("Unknown Value!")
@@ -832,7 +865,7 @@ def es(lexical_analyser):
 		lexical_analyser.acceptKeyword("get")
 		lexical_analyser.acceptCharacter("(")
 		ident = lexical_analyser.acceptIdentifier()
-		ArrayCodeGenerator.courant.ecrire('empilerAd('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################empiler ad(ident)
+		ArrayCodeGenerator.courant.ecrire('empiler('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################empiler ad(ident)
 		
 		print "empile "+ArrayCodeGenerator.courant.gettype(ident)+" apres "+ident
 		ArrayCodeGenerator.courant.pileType.append(ArrayCodeGenerator.courant.gettype(ident))
