@@ -511,6 +511,7 @@ def instr(lexical_analyser):
 				ArrayCodeGenerator.courant.ecrire('reserverBloc()')#############reserverBloc()
 				ArrayCodeGenerator.appel.append(ident)
 				ArrayCodeGenerator.nbappel.append(0)
+				print "pouic !"
 				listePe(lexical_analyser)
 				ArrayCodeGenerator.nbappel.pop()
 				ArrayCodeGenerator.appel.pop()
@@ -541,6 +542,8 @@ def listePe(lexical_analyser):
 
 	
 	expression(lexical_analyser)
+	print "### ### ###"
+	print str(ArrayCodeGenerator.appel)
 	ArrayCodeGenerator.nbappel[-1]+=1
 	
 	if lexical_analyser.isCharacter(","):
@@ -821,7 +824,16 @@ def elemPrim(lexical_analyser):
 			ArrayCodeGenerator.courant.ecrire('reserverBloc()')#############reserverBloc()	
 			
 			if not lexical_analyser.isCharacter(")"):
+			
+			
+				ArrayCodeGenerator.appel.append(ident)
+				ArrayCodeGenerator.nbappel.append(0)
+				print "pouic !"
 				listePe(lexical_analyser)
+				ArrayCodeGenerator.nbappel.pop()
+				ArrayCodeGenerator.appel.pop()			
+			
+			
 				
 			ArrayCodeGenerator.courant.ecrire('traStat('+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].adresseDebut)+','+str(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ident)].nbParam)+')')###############################################     Appel fonction AVEC parametre
 			
@@ -841,8 +853,10 @@ def elemPrim(lexical_analyser):
 			
 			if(ArrayCodeGenerator.appel!=[]):
 				#####appel  dans une fonctionkl!s<,kl!
-				if(ArrayCodeGenerator.flag==0):			
-					if(ArrayCodeGenerator.retourdictionnaire(ArrayCodeGenerator.appel[-1]).identout(ArrayCodeGenerator.retourdictionnaire(ArrayCodeGenerator.appel[-1]).identifierTable[ArrayCodeGenerator.nbappel[-1]][1])):
+				if(ArrayCodeGenerator.flag==0):
+					print "#####################################################################"
+					print str(ArrayCodeGenerator.appel)
+					if(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ArrayCodeGenerator.appel[-1])].identout(ArrayCodeGenerator.petitablo[ArrayCodeGenerator.retourDictionnaire(ArrayCodeGenerator.appel[-1])].identifierTable[ArrayCodeGenerator.nbappel[-1]][1])):
 						ArrayCodeGenerator.courant.ecrire('empilerAd('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################    'empiler(ad(ident))'	
 					else:
 						ArrayCodeGenerator.courant.ecrire('empilerParam('+str(ArrayCodeGenerator.courant.getindex(ident))+')')#####################################    'empiler(ad(ident))'
